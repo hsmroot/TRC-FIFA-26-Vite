@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/football",
+      "destination": "https://api.football-data.org/v4/matches?competitions=2000"
+    }
+  ]
+}
