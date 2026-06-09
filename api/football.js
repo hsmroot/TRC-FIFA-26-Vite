@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     console.log("Fetching entire tournament bracket...");
     
     // UPDATED URL: Fetching the entire Euro 2024 competition bracket
-    const response = await fetch("https://api.football-data.org/v4/competitions/2018/matches", {
+    const response = await fetch("https://api.football-data.org/v4/competitions/2000/matches", {
       headers: { "X-Auth-Token": "43eeec2981614dfc9b8f30a1a5bb8c01" }
     });
     
