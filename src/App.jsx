@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
 
-// Hardcoded API Token
-const API_KEY = "43eeec2981614dfc9b8f30a1a5bb8c01";
-
 // 24 Participants - Ranked Top-Tier paired inversely with Lowest-Tier
 const INITIAL_ROSTER = [
   { id: 1, name: "Zhihao", topTeam: "France", topFlag: "🇫🇷", lowTeam: "Curaçao", lowFlag: "🇨🇼" },
@@ -44,11 +41,8 @@ export default function App() {
   const fetchLiveData = async () => {
     setIsSyncing(true);
     try {
-      // THIS IS THE UPDATED PROXY URL
-      const response = await fetch(
-        "/api/football",
-        { headers: { "X-Auth-Token": API_KEY } }
-      );
+      // Calling your new Vercel Serverless Function instead of the direct API
+      const response = await fetch("/api/football");
 
       if (!response.ok) throw new Error(`API returned status: ${response.status}`);
 
