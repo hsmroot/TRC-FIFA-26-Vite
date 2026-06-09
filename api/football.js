@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   try {
     console.log("Attempting to fetch from Football API...");
     
-    const response = await fetch("https://api.football-data.org/v4/matches?competitions=2000", {
+    const response = await fetch("https://api.football-data.org/v4/matches?competitions=2018", {
       headers: { "X-Auth-Token": "43eeec2981614dfc9b8f30a1a5bb8c01" }
     });
     
