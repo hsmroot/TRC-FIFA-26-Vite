@@ -52,31 +52,22 @@ export default function App() {
           const homeTeam = match.homeTeam.name;
           const awayTeam = match.awayTeam.name;
           
-          // 1. Grab the API's inflated score to determine who officially gets the Win
-          const homeTotalScore = match.score.fullTime.home;
-          const awayTotalScore = match.score.fullTime.away;
+          // 1. The API provides a 'winner' text field that flawlessly resolves penalty shootouts for us
+          const matchWinner = match.score.winner;
 
-          // 2. Set up the goals we are actually going to count for the tiebreaker
-          let homeGoals = homeTotalScore;
-          let awayGoals = awayTotalScore;
-
-          // 3. If it went to penalties, subtract the penalty goals from the goal tally
-          if (match.score.penalties && match.score.penalties.home !== null) {
-            homeGoals -= match.score.penalties.home;
-            awayGoals -= match.score.penalties.away;
-          }
+          // 2. The 'fullTime' score already cleanly excludes penalty shootout goals, making it safe for our tiebreaker
+          const homeGoals = match.score.fullTime.home !== null ? match.score.fullTime.home : 0;
+          const awayGoals = match.score.fullTime.away !== null ? match.score.fullTime.away : 0;
 
           if (freshStats[homeTeam]) {
-            // Give wins/draws based on the final combined score
-            if (homeTotalScore > awayTotalScore) freshStats[homeTeam].wins += 1;
-            else if (homeTotalScore === awayTotalScore) freshStats[homeTeam].draws += 1;
+            if (matchWinner === "HOME_TEAM") freshStats[homeTeam].wins += 1;
+            else if (matchWinner === "DRAW") freshStats[homeTeam].draws += 1;
             
-            // Only add the real, adjusted goals to their total
             freshStats[homeTeam].goals += homeGoals;
           }
           if (freshStats[awayTeam]) {
-            if (awayTotalScore > homeTotalScore) freshStats[awayTeam].wins += 1;
-            else if (homeTotalScore === awayTotalScore) freshStats[awayTeam].draws += 1;
+            if (matchWinner === "AWAY_TEAM") freshStats[awayTeam].wins += 1;
+            else if (matchWinner === "DRAW") freshStats[awayTeam].draws += 1;
             
             freshStats[awayTeam].goals += awayGoals;
           }
