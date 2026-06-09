@@ -3,174 +3,206 @@ import React, { useState, useEffect, useMemo } from "react";
 // Hardcoded API Token
 const API_KEY = "43eeec2981614dfc9b8f30a1a5bb8c01";
 
-// Exactly 20 participants parsed from the TRC email header image
+// 24 Participants - Ranked Top-Tier paired inversely with Lowest-Tier
 const INITIAL_ROSTER = [
   {
     id: 1,
-    name: "Doug Wilson",
+    name: "Zhihao",
     topTeam: "France",
     topFlag: "🇫🇷",
-    lowTeam: "DR Congo",
-    lowFlag: "🇨🇩",
-  },
-  {
-    id: 2,
-    name: "Minh Kieu",
-    topTeam: "Spain",
-    topFlag: "🇪🇸",
-    lowTeam: "Uzbekistan",
-    lowFlag: "🇺🇿",
-  },
-  {
-    id: 3,
-    name: "Prakash Ranjitkar",
-    topTeam: "Argentina",
-    topFlag: "🇦🇷",
     lowTeam: "Curaçao",
     lowFlag: "🇨🇼",
   },
   {
-    id: 4,
-    name: "Harisankar Menon",
-    topTeam: "England",
-    topFlag: "🇬🇧",
+    id: 2,
+    name: "Junrun",
+    topTeam: "Argentina",
+    topFlag: "🇦🇷",
     lowTeam: "Cape Verde",
     lowFlag: "🇨🇻",
   },
   {
-    id: 5,
-    name: "Yunlong Wang",
-    topTeam: "Portugal",
-    topFlag: "🇵🇹",
+    id: 3,
+    name: "Tahmid",
+    topTeam: "Brazil",
+    topFlag: "🇧🇷",
     lowTeam: "Haiti",
     lowFlag: "🇭🇹",
   },
   {
+    id: 4,
+    name: "Minh",
+    topTeam: "England",
+    topFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+    lowTeam: "El Salvador",
+    lowFlag: "🇸🇻",
+  },
+  {
+    id: 5,
+    name: "Theuns",
+    topTeam: "Spain",
+    topFlag: "🇪🇸",
+    lowTeam: "Bahrain",
+    lowFlag: "🇧🇭",
+  },
+  {
     id: 6,
-    name: "Harshana Senanayake",
-    topTeam: "Brazil",
-    topFlag: "🇧🇷",
+    name: "Doug",
+    topTeam: "Portugal",
+    topFlag: "🇵🇹",
+    lowTeam: "Uzbekistan",
+    lowFlag: "🇺🇿",
+  },
+  {
+    id: 7,
+    name: "Nikhil",
+    topTeam: "Netherlands",
+    topFlag: "🇳🇱",
+    lowTeam: "Oman",
+    lowFlag: "🇴🇲",
+  },
+  {
+    id: 8,
+    name: "Qihan",
+    topTeam: "Germany",
+    topFlag: "🇩🇪",
+    lowTeam: "Jordan",
+    lowFlag: "🇯🇴",
+  },
+  {
+    id: 9,
+    name: "Pari",
+    topTeam: "Italy",
+    topFlag: "🇮🇹",
     lowTeam: "Bosnia",
     lowFlag: "🇧🇦",
   },
   {
-    id: 7,
-    name: "Seosamh Costello",
-    topTeam: "Netherlands",
-    topFlag: "🇳🇱",
+    id: 10,
+    name: "Yunlong",
+    topTeam: "Belgium",
+    topFlag: "🇧🇪",
     lowTeam: "New Zealand",
     lowFlag: "🇳🇿",
   },
   {
-    id: 8,
-    name: "Theuns Henning",
+    id: 11,
+    name: "Hari",
+    topTeam: "Uruguay",
+    topFlag: "🇺🇾",
+    lowTeam: "DR Congo",
+    lowFlag: "🇨🇩",
+  },
+  {
+    id: 12,
+    name: "Paul",
+    topTeam: "Colombia",
+    topFlag: "🇨🇴",
+    lowTeam: "Honduras",
+    lowFlag: "🇭🇳",
+  },
+  {
+    id: 13,
+    name: "Sean",
+    topTeam: "Croatia",
+    topFlag: "🇭🇷",
+    lowTeam: "Qatar",
+    lowFlag: "🇶🇦",
+  },
+  {
+    id: 14,
+    name: "Hongyu",
     topTeam: "Morocco",
     topFlag: "🇲🇦",
     lowTeam: "South Africa",
     lowFlag: "🇿🇦",
   },
   {
-    id: 9,
-    name: "Subeh Chowdhury",
-    topTeam: "Belgium",
-    topFlag: "🇧🇪",
-    lowTeam: "Panama",
-    lowFlag: "🇵🇦",
-  },
-  {
-    id: 10,
-    name: "Bevan Clement",
-    topTeam: "Germany",
-    topFlag: "🇩🇪",
-    lowTeam: "Ghana",
-    lowFlag: "🇬🇭",
-  },
-  {
-    id: 11,
-    name: "Nikhil Narayan",
-    topTeam: "Uruguay",
-    topFlag: "🇺🇾",
-    lowTeam: "Jordan",
-    lowFlag: "🇯🇴",
-  },
-  {
-    id: 12,
-    name: "Neil Airey",
+    id: 15,
+    name: "Hassan",
     topTeam: "USA",
     topFlag: "🇺🇸",
     lowTeam: "Iraq",
     lowFlag: "🇮🇶",
   },
   {
-    id: 13,
-    name: "Paul Martin",
+    id: 16,
+    name: "Neil",
     topTeam: "Mexico",
     topFlag: "🇲🇽",
-    lowTeam: "Saudi Arabia",
-    lowFlag: "🇸🇦",
-  },
-  {
-    id: 14,
-    name: "Bernard Jacobsen",
-    topTeam: "Colombia",
-    topFlag: "🇨🇴",
-    lowTeam: "Qatar",
-    lowFlag: "🇶🇦",
-  },
-  {
-    id: 15,
-    name: "Kamran Mukhtar",
-    topTeam: "Switzerland",
-    topFlag: "🇨🇭",
-    lowTeam: "Tunisia",
-    lowFlag: "🇹🇳",
-  },
-  {
-    id: 16,
-    name: "Parichehr Dogani Aghcheghloo",
-    topTeam: "Croatia",
-    topFlag: "🇭🇷",
-    lowTeam: "Egypt",
-    lowFlag: "🇪🇬",
-  },
-  {
-    id: 17,
-    name: "Irina Holleran",
-    topTeam: "Japan",
-    topFlag: "🇯🇵",
-    lowTeam: "Czech Republic",
-    lowFlag: "🇨🇿",
-  },
-  {
-    id: 18,
-    name: "Qihan Zhong",
-    topTeam: "Senegal",
-    topFlag: "🇸🇳",
-    lowTeam: "Austria",
-    lowFlag: "🇦🇹",
-  },
-  {
-    id: 19,
-    name: "Hongyu Wang",
-    topTeam: "Italy",
-    topFlag: "🇮🇹",
     lowTeam: "Jamaica",
     lowFlag: "🇯🇲",
   },
   {
+    id: 17,
+    name: "Irina",
+    topTeam: "Senegal",
+    topFlag: "🇸🇳",
+    lowTeam: "Venezuela",
+    lowFlag: "🇻🇪",
+  },
+  {
+    id: 18,
+    name: "Jawed",
+    topTeam: "Japan",
+    topFlag: "🇯🇵",
+    lowTeam: "Mali",
+    lowFlag: "🇲🇱",
+  },
+  {
+    id: 19,
+    name: "Jade",
+    topTeam: "Switzerland",
+    topFlag: "🇨🇭",
+    lowTeam: "Ghana",
+    lowFlag: "🇬🇭",
+  },
+  {
     id: 20,
-    name: "Sean Bearsley",
+    name: "Qi",
     topTeam: "South Korea",
     topFlag: "🇰🇷",
-    lowTeam: "Ecuador",
-    lowFlag: "🇪🇨",
+    lowTeam: "Saudi Arabia",
+    lowFlag: "🇸🇦",
+  },
+  {
+    id: 21,
+    name: "Prakash",
+    topTeam: "Denmark",
+    topFlag: "🇩🇰",
+    lowTeam: "Panama",
+    lowFlag: "🇵🇦",
+  },
+  {
+    id: 22,
+    name: "Seosamh",
+    topTeam: "Austria",
+    topFlag: "🇦🇹",
+    lowTeam: "Tunisia",
+    lowFlag: "🇹🇳",
+  },
+  {
+    id: 23,
+    name: "Huo",
+    topTeam: "Ecuador",
+    topFlag: "🇪🇨",
+    lowTeam: "Egypt",
+    lowFlag: "🇪🇬",
+  },
+  {
+    id: 24,
+    name: "Hassan",
+    topTeam: "Ukraine",
+    topFlag: "🇺🇦",
+    lowTeam: "Czech Republic",
+    lowFlag: "🇨🇿",
   },
 ];
 
 const INITIAL_TEAM_STATS = {};
 INITIAL_ROSTER.forEach((p) => {
-  INITIAL_TEAM_STATS[p.topTeam] = { wins: 0, cleanSheets: 0 };
-  INITIAL_TEAM_STATS[p.lowTeam] = { wins: 0, cleanSheets: 0 };
+  INITIAL_TEAM_STATS[p.topTeam] = { wins: 0, draws: 0, goals: 0 };
+  INITIAL_TEAM_STATS[p.lowTeam] = { wins: 0, draws: 0, goals: 0 };
 });
 
 export default function App() {
@@ -200,11 +232,15 @@ export default function App() {
 
           if (freshStats[homeTeam]) {
             if (homeGoals > awayGoals) freshStats[homeTeam].wins += 1;
-            if (awayGoals === 0) freshStats[homeTeam].cleanSheets += 1;
+            else if (homeGoals === awayGoals) freshStats[homeTeam].draws += 1;
+
+            freshStats[homeTeam].goals += homeGoals;
           }
           if (freshStats[awayTeam]) {
             if (awayGoals > homeGoals) freshStats[awayTeam].wins += 1;
-            if (homeGoals === 0) freshStats[awayTeam].cleanSheets += 1;
+            else if (homeGoals === awayGoals) freshStats[awayTeam].draws += 1;
+
+            freshStats[awayTeam].goals += awayGoals;
           }
         }
       });
@@ -222,25 +258,27 @@ export default function App() {
 
   const leaderboardData = useMemo(() => {
     return INITIAL_ROSTER.map((p) => {
-      const top = teamStats[p.topTeam] || { wins: 0, cleanSheets: 0 };
-      const low = teamStats[p.lowTeam] || { wins: 0, cleanSheets: 0 };
+      const top = teamStats[p.topTeam] || { wins: 0, draws: 0, goals: 0 };
+      const low = teamStats[p.lowTeam] || { wins: 0, draws: 0, goals: 0 };
+
       const totalWins = top.wins + low.wins;
-      const totalCS = top.cleanSheets + low.cleanSheets;
-      const totalPoints = totalWins * 3 + totalCS * 1;
-      const initials = p.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .substring(0, 2);
+      const totalDraws = top.draws + low.draws;
+      const totalGoals = top.goals + low.goals;
+
+      // 3 Pts for Win, 1 Pt for Draw
+      const totalPoints = totalWins * 3 + totalDraws * 1;
+
+      const initials = p.name.substring(0, 2).toUpperCase();
 
       return {
         ...p,
         wins: totalWins,
-        cleanSheets: totalCS,
+        draws: totalDraws,
+        goals: totalGoals,
         points: totalPoints,
         initials,
       };
-    }).sort((a, b) => b.points - a.points || b.wins - a.wins);
+    }).sort((a, b) => b.points - a.points || b.goals - a.goals);
   }, [teamStats]);
 
   const styles = {
@@ -342,7 +380,9 @@ export default function App() {
         <header style={styles.header}>
           <div>
             <h1 style={styles.title}>2026 TRC FIFA World Cup Sweepstakes!</h1>
-            <div style={styles.subtitle}>Winner WInner TRC Chicken DInner!</div>
+            <div style={styles.subtitle}>
+              Winner Winner Chicken Dinner (Top) & Wooden Spoon (Low)
+            </div>
           </div>
           <button
             onClick={fetchLiveData}
@@ -368,15 +408,12 @@ export default function App() {
                 >
                   Rank
                 </th>
-                <th style={styles.th}>Participant Name</th>
+                <th style={styles.th}>Participant</th>
                 <th style={styles.th}>Top-Tier Pick</th>
                 <th style={styles.th}>Lower-Tier Pick</th>
-                <th style={{ ...styles.th, textAlign: "center" }}>
-                  Total Wins
-                </th>
-                <th style={{ ...styles.th, textAlign: "center" }}>
-                  Clean Sheets
-                </th>
+                <th style={{ ...styles.th, textAlign: "center" }}>Wins</th>
+                <th style={{ ...styles.th, textAlign: "center" }}>Draws</th>
+                <th style={{ ...styles.th, textAlign: "center" }}>Goals</th>
                 <th
                   style={{
                     ...styles.th,
@@ -462,11 +499,21 @@ export default function App() {
                     style={{
                       ...styles.td,
                       textAlign: "center",
+                      color: "#94a3b8",
+                      fontWeight: "500",
+                    }}
+                  >
+                    {player.draws}
+                  </td>
+                  <td
+                    style={{
+                      ...styles.td,
+                      textAlign: "center",
                       color: "#22d3ee",
                       fontWeight: "500",
                     }}
                   >
-                    {player.cleanSheets}
+                    {player.goals}
                   </td>
                   <td
                     style={{
