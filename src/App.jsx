@@ -25,7 +25,7 @@ const INITIAL_ROSTER = [
   { id: 21, name: "Bevan", topTeam: "Denmark", topFlag: "🇩🇰", lowTeam: "Panama", lowFlag: "🇵🇦" },
   { id: 22, name: "Johnson", topTeam: "Austria", topFlag: "🇦🇹", lowTeam: "Tunisia", lowFlag: "🇹🇳" },
   { id: 23, name: "Huo", topTeam: "Ecuador", topFlag: "🇪🇨", lowTeam: "Egypt", lowFlag: "🇪🇬" },
-  { id: 24, name: "Hassan", topTeam: "Ukraine", topFlag: "🇺🇦", lowTeam: "Czech Republic", lowFlag: "🇨🇿" }
+  { id: 24, name: "Prakash", topTeam: "Ukraine", topFlag: "🇺🇦", lowTeam: "Czech Republic", lowFlag: "🇨🇿" }
 ];
 
 const INITIAL_TEAM_STATS = {};
