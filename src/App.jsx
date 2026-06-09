@@ -5,14 +5,14 @@ const INITIAL_ROSTER = [
   { id: 1, name: "Zhihao", topTeam: "France", topFlag: "🇫🇷", lowTeam: "Curaçao", lowFlag: "🇨🇼" },
   { id: 2, name: "Junrun", topTeam: "Argentina", topFlag: "🇦🇷", lowTeam: "Cape Verde", lowFlag: "🇨🇻" },
   { id: 3, name: "Tahmid", topTeam: "Brazil", topFlag: "🇧🇷", lowTeam: "Haiti", lowFlag: "🇭🇹" },
-  { id: 4, name: "Hari", topTeam: "Uruguay", topFlag: "🇺🇾", lowTeam: "DR Congo", lowFlag: "🇨🇩" },
+  { id: 4, name: "Minh", topTeam: "Uruguay", topFlag: "🇺🇾", lowTeam: "DR Congo", lowFlag: "🇨🇩" },
   { id: 5, name: "Theuns", topTeam: "Spain", topFlag: "🇪🇸", lowTeam: "Bahrain", lowFlag: "🇧🇭" },
   { id: 6, name: "Doug", topTeam: "Portugal", topFlag: "🇵🇹", lowTeam: "Uzbekistan", lowFlag: "🇺🇿" },
   { id: 7, name: "Nikhil", topTeam: "Netherlands", topFlag: "🇳🇱", lowTeam: "Oman", lowFlag: "🇴🇲" },
   { id: 8, name: "Qihan", topTeam: "Germany", topFlag: "🇩🇪", lowTeam: "Jordan", lowFlag: "🇯🇴" },
   { id: 9, name: "Pari", topTeam: "Italy", topFlag: "🇮🇹", lowTeam: "Bosnia", lowFlag: "🇧🇦" },
   { id: 10, name: "Yunlong", topTeam: "Belgium", topFlag: "🇧🇪", lowTeam: "New Zealand", lowFlag: "🇳🇿" },
-  { id: 11, name: "Minh", topTeam: "England", topFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", lowTeam: "El Salvador", lowFlag: "🇸🇻" },
+  { id: 11, name: "Hari", topTeam: "England", topFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", lowTeam: "El Salvador", lowFlag: "🇸🇻" },
   { id: 12, name: "Paul", topTeam: "Colombia", topFlag: "🇨🇴", lowTeam: "Honduras", lowFlag: "🇭🇳" },
   { id: 13, name: "Sean", topTeam: "Croatia", topFlag: "🇭🇷", lowTeam: "Qatar", lowFlag: "🇶🇦" },
   { id: 14, name: "Hongyu", topTeam: "Morocco", topFlag: "🇲🇦", lowTeam: "South Africa", lowFlag: "🇿🇦" },
@@ -41,9 +41,7 @@ export default function App() {
   const fetchLiveData = async () => {
     setIsSyncing(true);
     try {
-      // Calling your new Vercel Serverless Function instead of the direct API
       const response = await fetch("/api/football");
-
       if (!response.ok) throw new Error(`API returned status: ${response.status}`);
 
       const data = await response.json();
@@ -53,18 +51,32 @@ export default function App() {
         if (match.status === "FINISHED") {
           const homeTeam = match.homeTeam.name;
           const awayTeam = match.awayTeam.name;
-          const homeGoals = match.score.fullTime.home;
-          const awayGoals = match.score.fullTime.away;
+          
+          // 1. Grab the API's inflated score to determine who officially gets the Win
+          const homeTotalScore = match.score.fullTime.home;
+          const awayTotalScore = match.score.fullTime.away;
+
+          // 2. Set up the goals we are actually going to count for the tiebreaker
+          let homeGoals = homeTotalScore;
+          let awayGoals = awayTotalScore;
+
+          // 3. If it went to penalties, subtract the penalty goals from the goal tally
+          if (match.score.penalties && match.score.penalties.home !== null) {
+            homeGoals -= match.score.penalties.home;
+            awayGoals -= match.score.penalties.away;
+          }
 
           if (freshStats[homeTeam]) {
-            if (homeGoals > awayGoals) freshStats[homeTeam].wins += 1;
-            else if (homeGoals === awayGoals) freshStats[homeTeam].draws += 1;
+            // Give wins/draws based on the final combined score
+            if (homeTotalScore > awayTotalScore) freshStats[homeTeam].wins += 1;
+            else if (homeTotalScore === awayTotalScore) freshStats[homeTeam].draws += 1;
             
+            // Only add the real, adjusted goals to their total
             freshStats[homeTeam].goals += homeGoals;
           }
           if (freshStats[awayTeam]) {
-            if (awayGoals > homeGoals) freshStats[awayTeam].wins += 1;
-            else if (homeGoals === awayGoals) freshStats[awayTeam].draws += 1;
+            if (awayTotalScore > homeTotalScore) freshStats[awayTeam].wins += 1;
+            else if (homeTotalScore === awayTotalScore) freshStats[awayTeam].draws += 1;
             
             freshStats[awayTeam].goals += awayGoals;
           }
@@ -91,9 +103,7 @@ export default function App() {
       const totalDraws = top.draws + low.draws;
       const totalGoals = top.goals + low.goals;
       
-      // 3 Pts for Win, 1 Pt for Draw
       const totalPoints = (totalWins * 3) + (totalDraws * 1);
-      
       const initials = p.name.substring(0, 2).toUpperCase();
 
       return {
