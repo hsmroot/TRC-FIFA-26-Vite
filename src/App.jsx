@@ -22,8 +22,8 @@ const INITIAL_ROSTER = [
   { id: 18, name: "Jawed", topTeam: "Japan", topFlag: "🇯🇵", lowTeam: "Mali", lowFlag: "🇲🇱" },
   { id: 19, name: "Jade", topTeam: "Switzerland", topFlag: "🇨🇭", lowTeam: "Ghana", lowFlag: "🇬🇭" },
   { id: 20, name: "Qi", topTeam: "South Korea", topFlag: "🇰🇷", lowTeam: "Saudi Arabia", lowFlag: "🇸🇦" },
-  { id: 21, name: "Prakash", topTeam: "Australia", topFlag: "🇦🇺", lowTeam: "Panama", lowFlag: "🇵🇦" },
-  { id: 22, name: "Seosamh", topTeam: "Austria", topFlag: "🇦🇹", lowTeam: "Egypt", lowFlag: "🇪🇬" },
+  { id: 21, name: "Bevan", topTeam: "Australia", topFlag: "🇦🇺", lowTeam: "Panama", lowFlag: "🇵🇦" },
+  { id: 22, name: "Johnson", topTeam: "Austria", topFlag: "🇦🇹", lowTeam: "Egypt", lowFlag: "🇪🇬" },
   { id: 23, name: "Huo", topTeam: "Ecuador", topFlag: "🇪🇨", lowTeam: "Ivory Coast", lowFlag: "🇨🇮" },
   { id: 24, name: "Prakash", topTeam: "Türkiye", topFlag: "🇹🇷", lowTeam: "Nigeria", lowFlag: "🇳🇬" }
 ];
