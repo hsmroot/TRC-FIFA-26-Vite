@@ -1,31 +1,31 @@
 import React, { useState, useEffect, useMemo } from "react";
 
-// 24 Participants - Ranked Top-Tier paired inversely with Lowest-Tier
+// 24 Participants - Ranked Top-Tier paired inversely with Lowest-Tier (100% 2026 Qualified Teams)
 const INITIAL_ROSTER = [
-  { id: 1, name: "Zhihao", topTeam: "France", topFlag: "🇫🇷", lowTeam: "Curaçao", lowFlag: "🇨🇼" },
-  { id: 2, name: "Junrun", topTeam: "Argentina", topFlag: "🇦🇷", lowTeam: "Cape Verde", lowFlag: "🇨🇻" },
+  { id: 1, name: "Zhihao", topTeam: "France", topFlag: "🇫🇷", lowTeam: "Scotland", lowFlag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
+  { id: 2, name: "Junrun", topTeam: "Argentina", topFlag: "🇦🇷", lowTeam: "Tunisia", lowFlag: "🇹🇳" },
   { id: 3, name: "Tahmid", topTeam: "Brazil", topFlag: "🇧🇷", lowTeam: "Haiti", lowFlag: "🇭🇹" },
-  { id: 4, name: "Hari", topTeam: "Uruguay", topFlag: "🇺🇾", lowTeam: "DR Congo", lowFlag: "🇨🇩" },
-  { id: 5, name: "Theuns", topTeam: "Spain", topFlag: "🇪🇸", lowTeam: "Bahrain", lowFlag: "🇧🇭" },
+  { id: 4, name: "Minh", topTeam: "Uruguay", topFlag: "🇺🇾", lowTeam: "DR Congo", lowFlag: "🇨🇩" },
+  { id: 5, name: "Theuns", topTeam: "Spain", topFlag: "🇪🇸", lowTeam: "Paraguay", lowFlag: "🇵🇾" },
   { id: 6, name: "Doug", topTeam: "Portugal", topFlag: "🇵🇹", lowTeam: "Uzbekistan", lowFlag: "🇺🇿" },
   { id: 7, name: "Nikhil", topTeam: "Netherlands", topFlag: "🇳🇱", lowTeam: "Oman", lowFlag: "🇴🇲" },
-  { id: 8, name: "Qihan", topTeam: "Germany", topFlag: "🇩🇪", lowTeam: "Jordan", lowFlag: "🇯🇴" },
-  { id: 9, name: "Pari", topTeam: "Italy", topFlag: "🇮🇹", lowTeam: "Bosnia", lowFlag: "🇧🇦" },
+  { id: 8, name: "Qihan", topTeam: "Germany", topFlag: "🇩🇪", lowTeam: "Chile", lowFlag: "🇨🇱" },
+  { id: 9, name: "Pari", topTeam: "USA", topFlag: "🇺🇸", lowTeam: "Iran", lowFlag: "🇮🇷" },
   { id: 10, name: "Yunlong", topTeam: "Belgium", topFlag: "🇧🇪", lowTeam: "New Zealand", lowFlag: "🇳🇿" },
-  { id: 11, name: "Minh", topTeam: "England", topFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", lowTeam: "El Salvador", lowFlag: "🇸🇻" },
-  { id: 12, name: "Paul", topTeam: "Colombia", topFlag: "🇨🇴", lowTeam: "Honduras", lowFlag: "🇭🇳" },
+  { id: 11, name: "Hari", topTeam: "England", topFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", lowTeam: "Canada", lowFlag: "🇨🇦" },
+  { id: 12, name: "Paul", topTeam: "Colombia", topFlag: "🇨🇴", lowTeam: "Algeria", lowFlag: "🇩🇿" },
   { id: 13, name: "Sean", topTeam: "Croatia", topFlag: "🇭🇷", lowTeam: "Qatar", lowFlag: "🇶🇦" },
   { id: 14, name: "Hongyu", topTeam: "Morocco", topFlag: "🇲🇦", lowTeam: "South Africa", lowFlag: "🇿🇦" },
-  { id: 15, name: "Hassan", topTeam: "USA", topFlag: "🇺🇸", lowTeam: "Iraq", lowFlag: "🇮🇶" },
-  { id: 16, name: "Neil", topTeam: "Mexico", topFlag: "🇲🇽", lowTeam: "Jamaica", lowFlag: "🇯🇲" },
+  { id: 15, name: "Hassan", topTeam: "Mexico", topFlag: "🇲🇽", lowTeam: "Iraq", lowFlag: "🇮🇶" },
+  { id: 16, name: "Neil", topTeam: "Denmark", topFlag: "🇩🇰", lowTeam: "Jamaica", lowFlag: "🇯🇲" },
   { id: 17, name: "Irina", topTeam: "Senegal", topFlag: "🇸🇳", lowTeam: "Venezuela", lowFlag: "🇻🇪" },
   { id: 18, name: "Jawed", topTeam: "Japan", topFlag: "🇯🇵", lowTeam: "Mali", lowFlag: "🇲🇱" },
   { id: 19, name: "Jade", topTeam: "Switzerland", topFlag: "🇨🇭", lowTeam: "Ghana", lowFlag: "🇬🇭" },
   { id: 20, name: "Qi", topTeam: "South Korea", topFlag: "🇰🇷", lowTeam: "Saudi Arabia", lowFlag: "🇸🇦" },
-  { id: 21, name: "Bevan", topTeam: "Denmark", topFlag: "🇩🇰", lowTeam: "Panama", lowFlag: "🇵🇦" },
-  { id: 22, name: "Johnson", topTeam: "Austria", topFlag: "🇦🇹", lowTeam: "Tunisia", lowFlag: "🇹🇳" },
-  { id: 23, name: "Huo", topTeam: "Ecuador", topFlag: "🇪🇨", lowTeam: "Egypt", lowFlag: "🇪🇬" },
-  { id: 24, name: "Prakash", topTeam: "Ukraine", topFlag: "🇺🇦", lowTeam: "Czech Republic", lowFlag: "🇨🇿" }
+  { id: 21, name: "Prakash", topTeam: "Australia", topFlag: "🇦🇺", lowTeam: "Panama", lowFlag: "🇵🇦" },
+  { id: 22, name: "Seosamh", topTeam: "Austria", topFlag: "🇦🇹", lowTeam: "Egypt", lowFlag: "🇪🇬" },
+  { id: 23, name: "Huo", topTeam: "Ecuador", topFlag: "🇪🇨", lowTeam: "Ivory Coast", lowFlag: "🇨🇮" },
+  { id: 24, name: "Hassan", topTeam: "Türkiye", topFlag: "🇹🇷", lowTeam: "Nigeria", lowFlag: "🇳🇬" }
 ];
 
 const INITIAL_TEAM_STATS = {};
@@ -37,6 +37,7 @@ INITIAL_ROSTER.forEach((p) => {
 export default function App() {
   const [teamStats, setTeamStats] = useState(INITIAL_TEAM_STATS);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   const fetchLiveData = async () => {
     setIsSyncing(true);
@@ -52,11 +53,11 @@ export default function App() {
           const homeTeam = match.homeTeam.name;
           const awayTeam = match.awayTeam.name;
           
-          // 1. Grab the API's raw full-time score (which awkwardly includes penalty shootout goals)
+          // 1. Grab the API's raw full-time score
           let homeOfficialScore = match.score.fullTime.home !== null ? match.score.fullTime.home : 0;
           let awayOfficialScore = match.score.fullTime.away !== null ? match.score.fullTime.away : 0;
 
-          // 2. OFFICIAL UEFA RULES: Subtract the shootout goals to get the true score at the end of 120 minutes
+          // 2. OFFICIAL FIFA RULES: Subtract shootout goals to get the true 120-minute score
           if (match.score.penalties && match.score.penalties.home !== null) {
             homeOfficialScore -= match.score.penalties.home;
             awayOfficialScore -= match.score.penalties.away;
@@ -79,6 +80,11 @@ export default function App() {
         }
       });
       setTeamStats(freshStats);
+      
+      // Update the timestamp on successful fetch
+      const now = new Date();
+      setLastUpdated(now.toLocaleString());
+
     } catch (error) {
       console.error("Sync Error:", error);
     } finally {
@@ -116,10 +122,15 @@ export default function App() {
   const styles = {
     wrapper: { backgroundColor: "#0f172a", color: "#f8fafc", fontFamily: "system-ui, sans-serif", minHeight: "100vh", padding: "24px" },
     container: { maxWidth: "1100px", margin: "0 auto" },
-    header: { display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "2px solid #1e293b", paddingBottom: "20px", marginBottom: "30px", flexWrap: "wrap", gap: "20px" },
+    header: { display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "2px solid #1e293b", paddingBottom: "20px", marginBottom: "20px", flexWrap: "wrap", gap: "20px" },
+    titleBox: { display: "flex", flexDirection: "column", gap: "8px" },
     title: { fontSize: "2.5rem", fontWeight: "800", color: "#ffffff", margin: 0, letterSpacing: "-0.05em" },
-    subtitle: { color: "#fbbf24", fontSize: "1.25rem", fontWeight: "700", marginTop: "6px", letterSpacing: "0.05em" },
+    subtitle: { color: "#fbbf24", fontSize: "1.25rem", fontWeight: "700", margin: 0, letterSpacing: "0.05em" },
+    timestamp: { color: "#94a3b8", fontSize: "0.9rem", margin: 0, fontStyle: "italic" },
     apiBtn: (loading) => ({ padding: "10px 20px", backgroundColor: loading ? "#64748b" : "#10b981", color: "#fff", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: loading ? "not-allowed" : "pointer", transition: "background-color 0.2s" }),
+    infoCard: { backgroundColor: "#1e293b", padding: "16px 20px", borderRadius: "8px", marginBottom: "24px", borderLeft: "4px solid #3b82f6" },
+    infoTitle: { margin: "0 0 8px 0", color: "#60a5fa", fontSize: "1.1rem" },
+    infoList: { margin: 0, paddingLeft: "20px", color: "#cbd5e1", fontSize: "0.95rem", display: "flex", flexDirection: "column", gap: "6px" },
     table: { width: "100%", borderCollapse: "collapse", textAlign: "left", backgroundColor: "#1e293b", borderRadius: "12px", overflow: "hidden" },
     th: { backgroundColor: "#0f172a", color: "#94a3b8", padding: "16px", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid #334155" },
     td: { padding: "16px", borderBottom: "1px solid #334155", fontSize: "0.95rem" },
@@ -134,14 +145,25 @@ export default function App() {
     <div style={styles.wrapper}>
       <div style={styles.container}>
         <header style={styles.header}>
-          <div>
+          <div style={styles.titleBox}>
             <h1 style={styles.title}>2026 TRC FIFA World Cup Sweepstakes!</h1>
-            <div style={styles.subtitle}>Winner Winner Chicken Dinner (Top) & Wooden Spoon (Low)</div>
+            <h2 style={styles.subtitle}>Winner Winner Chicken Dinner (Top) & Wooden Spoon (Low)</h2>
+            <p style={styles.timestamp}>Last Updated: {lastUpdated || "Waiting for kickoff..."}</p>
           </div>
           <button onClick={fetchLiveData} disabled={isSyncing} style={styles.apiBtn(isSyncing)}>
             {isSyncing ? "Syncing..." : "Refresh Live Data"}
           </button>
         </header>
+
+        {/* How It Works Section */}
+        <div style={styles.infoCard}>
+          <h3 style={styles.infoTitle}>How Points are Calculated (Official FIFA Rules)</h3>
+          <ul style={styles.infoList}>
+            <li><strong>Wins & Draws:</strong> 3 points for a win, 1 point for a draw based strictly on the score after 120 minutes.</li>
+            <li><strong>Penalty Shootouts:</strong> Ignored for standings. A match decided by penalties is officially recorded as a Draw.</li>
+            <li><strong>Tiebreakers:</strong> If total points are equal, the participant with the most in-game goals scored takes the higher rank.</li>
+          </ul>
+        </div>
 
         <div style={{ overflowX: "auto", borderRadius: "12px", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.4)" }}>
           <table style={styles.table}>
