@@ -52,22 +52,20 @@ export default function App() {
           const homeTeam = match.homeTeam.name;
           const awayTeam = match.awayTeam.name;
           
-          // 1. The API provides a 'winner' text field that flawlessly resolves penalty shootouts for us
-          const matchWinner = match.score.winner;
-
-          // 2. The 'fullTime' score already cleanly excludes penalty shootout goals, making it safe for our tiebreaker
+          // OFFICIAL RULES: Use ONLY the final score after 120 minutes.
+          // This naturally ignores penalty shootout outcomes and extra penalty goals.
           const homeGoals = match.score.fullTime.home !== null ? match.score.fullTime.home : 0;
           const awayGoals = match.score.fullTime.away !== null ? match.score.fullTime.away : 0;
 
           if (freshStats[homeTeam]) {
-            if (matchWinner === "HOME_TEAM") freshStats[homeTeam].wins += 1;
-            else if (matchWinner === "DRAW") freshStats[homeTeam].draws += 1;
+            if (homeGoals > awayGoals) freshStats[homeTeam].wins += 1;
+            else if (homeGoals === awayGoals) freshStats[homeTeam].draws += 1;
             
             freshStats[homeTeam].goals += homeGoals;
           }
           if (freshStats[awayTeam]) {
-            if (matchWinner === "AWAY_TEAM") freshStats[awayTeam].wins += 1;
-            else if (matchWinner === "DRAW") freshStats[awayTeam].draws += 1;
+            if (awayGoals > homeGoals) freshStats[awayTeam].wins += 1;
+            else if (homeGoals === awayGoals) freshStats[awayTeam].draws += 1;
             
             freshStats[awayTeam].goals += awayGoals;
           }
