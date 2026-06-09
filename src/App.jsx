@@ -52,22 +52,29 @@ export default function App() {
           const homeTeam = match.homeTeam.name;
           const awayTeam = match.awayTeam.name;
           
-          // OFFICIAL RULES: Use ONLY the final score after 120 minutes.
-          // This naturally ignores penalty shootout outcomes and extra penalty goals.
-          const homeGoals = match.score.fullTime.home !== null ? match.score.fullTime.home : 0;
-          const awayGoals = match.score.fullTime.away !== null ? match.score.fullTime.away : 0;
+          // 1. Grab the API's raw full-time score (which awkwardly includes penalty shootout goals)
+          let homeOfficialScore = match.score.fullTime.home !== null ? match.score.fullTime.home : 0;
+          let awayOfficialScore = match.score.fullTime.away !== null ? match.score.fullTime.away : 0;
+
+          // 2. OFFICIAL UEFA RULES: Subtract the shootout goals to get the true score at the end of 120 minutes
+          if (match.score.penalties && match.score.penalties.home !== null) {
+            homeOfficialScore -= match.score.penalties.home;
+            awayOfficialScore -= match.score.penalties.away;
+          }
 
           if (freshStats[homeTeam]) {
-            if (homeGoals > awayGoals) freshStats[homeTeam].wins += 1;
-            else if (homeGoals === awayGoals) freshStats[homeTeam].draws += 1;
+            // 3. Award Wins/Draws based ONLY on the true 120-minute score
+            if (homeOfficialScore > awayOfficialScore) freshStats[homeTeam].wins += 1;
+            else if (homeOfficialScore === awayOfficialScore) freshStats[homeTeam].draws += 1;
             
-            freshStats[homeTeam].goals += homeGoals;
+            // 4. Add the real, in-game goals
+            freshStats[homeTeam].goals += homeOfficialScore;
           }
           if (freshStats[awayTeam]) {
-            if (awayGoals > homeGoals) freshStats[awayTeam].wins += 1;
-            else if (homeGoals === awayGoals) freshStats[awayTeam].draws += 1;
+            if (awayOfficialScore > homeOfficialScore) freshStats[awayTeam].wins += 1;
+            else if (homeOfficialScore === awayOfficialScore) freshStats[awayTeam].draws += 1;
             
-            freshStats[awayTeam].goals += awayGoals;
+            freshStats[awayTeam].goals += awayOfficialScore;
           }
         }
       });
