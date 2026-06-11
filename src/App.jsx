@@ -10,14 +10,14 @@ const INITIAL_ROSTER = [
   { id: 6, name: "Doug", topTeam: "Portugal", topFlag: "🇵🇹", lowTeam: "Uzbekistan", lowFlag: "🇺🇿" },
   { id: 7, name: "Nikhil", topTeam: "Netherlands", topFlag: "🇳🇱", lowTeam: "Oman", lowFlag: "🇴🇲" },
   { id: 8, name: "Qihan", topTeam: "Germany", topFlag: "🇩🇪", lowTeam: "Chile", lowFlag: "🇨🇱" },
-  { id: 9, name: "Pari", topTeam: "USA", topFlag: "🇺🇸", lowTeam: "Iran", lowFlag: "🇮🇷" },
+  { id: 9, name: "Neil", topTeam: "USA", topFlag: "🇺🇸", lowTeam: "Iran", lowFlag: "🇮🇷" },
   { id: 10, name: "Yunlong", topTeam: "Belgium", topFlag: "🇧🇪", lowTeam: "New Zealand", lowFlag: "🇳🇿" },
   { id: 11, name: "Minh", topTeam: "England", topFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", lowTeam: "Canada", lowFlag: "🇨🇦" },
   { id: 12, name: "Paul", topTeam: "Colombia", topFlag: "🇨🇴", lowTeam: "Algeria", lowFlag: "🇩🇿" },
   { id: 13, name: "Sean", topTeam: "Croatia", topFlag: "🇭🇷", lowTeam: "Qatar", lowFlag: "🇶🇦" },
   { id: 14, name: "Hongyu", topTeam: "Morocco", topFlag: "🇲🇦", lowTeam: "South Africa", lowFlag: "🇿🇦" },
   { id: 15, name: "Hassan", topTeam: "Mexico", topFlag: "🇲🇽", lowTeam: "Iraq", lowFlag: "🇮🇶" },
-  { id: 16, name: "Neil", topTeam: "Denmark", topFlag: "🇩🇰", lowTeam: "Jamaica", lowFlag: "🇯🇲" },
+  { id: 16, name: "Pari", topTeam: "Denmark", topFlag: "🇩🇰", lowTeam: "Jamaica", lowFlag: "🇯🇲" },
   { id: 17, name: "Irina", topTeam: "Senegal", topFlag: "🇸🇳", lowTeam: "Venezuela", lowFlag: "🇻🇪" },
   { id: 18, name: "Jawed", topTeam: "Japan", topFlag: "🇯🇵", lowTeam: "Mali", lowFlag: "🇲🇱" },
   { id: 19, name: "Jade", topTeam: "Switzerland", topFlag: "🇨🇭", lowTeam: "Ghana", lowFlag: "🇬🇭" },
@@ -25,7 +25,7 @@ const INITIAL_ROSTER = [
   { id: 21, name: "Bevan", topTeam: "Australia", topFlag: "🇦🇺", lowTeam: "Panama", lowFlag: "🇵🇦" },
   { id: 22, name: "Johnson", topTeam: "Austria", topFlag: "🇦🇹", lowTeam: "Egypt", lowFlag: "🇪🇬" },
   { id: 23, name: "Huo", topTeam: "Ecuador", topFlag: "🇪🇨", lowTeam: "Ivory Coast", lowFlag: "🇨🇮" },
-  { id: 24, name: "Prakash", topTeam: "Türkiye", topFlag: "🇹🇷", lowTeam: "Nigeria", lowFlag: "🇳🇬" }
+  { id: 24, name: "Jackie", topTeam: "Türkiye", topFlag: "🇹🇷", lowTeam: "Nigeria", lowFlag: "🇳🇬" }
 ];
 
 const INITIAL_TEAM_STATS = {};
