@@ -50,25 +50,40 @@ export default function App() {
 
       data.matches?.forEach((match) => {
         if (match.status === "FINISHED") {
-          const homeTeam = match.homeTeam.name;
-          const awayTeam = match.awayTeam.name;
           
-          // 1. Grab the API's raw full-time score
+          // 1. Map API team names to match the custom App roster names exactly
+          const apiNameMap = {
+            "Czech Republic": "Czechia",
+            "Korea Republic": "South Korea",
+            "United States": "USA",
+            "Côte d'Ivoire": "Ivory Coast",
+            "Turkey": "Türkiye",
+            "Cape Verde": "Cabo Verde",
+            "IR Iran": "Iran"
+          };
+
+          const rawHome = match.homeTeam.name;
+          const rawAway = match.awayTeam.name;
+          
+          const homeTeam = apiNameMap[rawHome] || rawHome;
+          const awayTeam = apiNameMap[rawAway] || rawAway;
+
+          // 2. Grab the API's raw full-time score
           let homeOfficialScore = match.score.fullTime.home !== null ? match.score.fullTime.home : 0;
           let awayOfficialScore = match.score.fullTime.away !== null ? match.score.fullTime.away : 0;
 
-          // 2. OFFICIAL FIFA RULES: Subtract shootout goals to get the true 120-minute score
+          // 3. OFFICIAL FIFA RULES: Subtract shootout goals to get the true 120-minute score
           if (match.score.penalties && match.score.penalties.home !== null) {
             homeOfficialScore -= match.score.penalties.home;
             awayOfficialScore -= match.score.penalties.away;
           }
 
           if (freshStats[homeTeam]) {
-            // 3. Award Wins/Draws based ONLY on the true 120-minute score
+            // 4. Award Wins/Draws based ONLY on the true 120-minute score
             if (homeOfficialScore > awayOfficialScore) freshStats[homeTeam].wins += 1;
             else if (homeOfficialScore === awayOfficialScore) freshStats[homeTeam].draws += 1;
             
-            // 4. Add the real, in-game goals
+            // 5. Add the real, in-game goals
             freshStats[homeTeam].goals += homeOfficialScore;
           }
           if (freshStats[awayTeam]) {
