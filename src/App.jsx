@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useMemo } from "react";
 
 // 24 Participants - Ranked Top-Tier paired inversely with Lowest-Tier (100% 2026 Qualified Teams)
+// Names strictly match official FIFA 2026 designations
 const INITIAL_ROSTER = [
   { id: 1, name: "Zhihao", topTeam: "France", topFlag: "🇫🇷", lowTeam: "Scotland", lowFlag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
   { id: 2, name: "Junrun", topTeam: "Argentina", topFlag: "🇦🇷", lowTeam: "Tunisia", lowFlag: "🇹🇳" },
   { id: 3, name: "Tahmid", topTeam: "Brazil", topFlag: "🇧🇷", lowTeam: "Haiti", lowFlag: "🇭🇹" },
-  { id: 4, name: "Hari", topTeam: "Uruguay", topFlag: "🇺🇾", lowTeam: "DR Congo", lowFlag: "🇨🇩" },
+  { id: 4, name: "Hari", topTeam: "Uruguay", topFlag: "🇺🇾", lowTeam: "Congo DR", lowFlag: "🇨🇩" },
   { id: 5, name: "Theuns", topTeam: "Spain", topFlag: "🇪🇸", lowTeam: "Paraguay", lowFlag: "🇵🇾" },
   { id: 6, name: "Doug", topTeam: "Portugal", topFlag: "🇵🇹", lowTeam: "Uzbekistan", lowFlag: "🇺🇿" },
   { id: 7, name: "Nikhil", topTeam: "Netherlands", topFlag: "🇳🇱", lowTeam: "Jordan", lowFlag: "🇯🇴" },
   { id: 8, name: "Qihan", topTeam: "Germany", topFlag: "🇩🇪", lowTeam: "Cabo Verde", lowFlag: "🇨🇻" },
-  { id: 9, name: "Neil", topTeam: "USA", topFlag: "🇺🇸", lowTeam: "Iran", lowFlag: "🇮🇷" },
+  { id: 9, name: "Neil", topTeam: "USA", topFlag: "🇺🇸", lowTeam: "IR Iran", lowFlag: "🇮🇷" },
   { id: 10, name: "Yunlong", topTeam: "Belgium", topFlag: "🇧🇪", lowTeam: "New Zealand", lowFlag: "🇳🇿" },
   { id: 11, name: "Minh", topTeam: "England", topFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", lowTeam: "Canada", lowFlag: "🇨🇦" },
   { id: 12, name: "Paul", topTeam: "Colombia", topFlag: "🇨🇴", lowTeam: "Algeria", lowFlag: "🇩🇿" },
@@ -21,10 +22,10 @@ const INITIAL_ROSTER = [
   { id: 17, name: "Irina", topTeam: "Senegal", topFlag: "🇸🇳", lowTeam: "Bosnia and Herzegovina", lowFlag: "🇧🇦" },
   { id: 18, name: "Jawed", topTeam: "Japan", topFlag: "🇯🇵", lowTeam: "Czechia", lowFlag: "🇨🇿" },
   { id: 19, name: "Jade", topTeam: "Switzerland", topFlag: "🇨🇭", lowTeam: "Ghana", lowFlag: "🇬🇭" },
-  { id: 20, name: "Qi", topTeam: "South Korea", topFlag: "🇰🇷", lowTeam: "Saudi Arabia", lowFlag: "🇸🇦" },
+  { id: 20, name: "Qi", topTeam: "Korea Republic", topFlag: "🇰🇷", lowTeam: "Saudi Arabia", lowFlag: "🇸🇦" },
   { id: 21, name: "Bevan", topTeam: "Australia", topFlag: "🇦🇺", lowTeam: "Panama", lowFlag: "🇵🇦" },
   { id: 22, name: "Johnson", topTeam: "Austria", topFlag: "🇦🇹", lowTeam: "Egypt", lowFlag: "🇪🇬" },
-  { id: 23, name: "Huo", topTeam: "Ecuador", topFlag: "🇪🇨", lowTeam: "Ivory Coast", lowFlag: "🇨🇮" },
+  { id: 23, name: "Huo", topTeam: "Ecuador", topFlag: "🇪🇨", lowTeam: "Côte d'Ivoire", lowFlag: "🇨🇮" },
   { id: 24, name: "Jackie", topTeam: "Türkiye", topFlag: "🇹🇷", lowTeam: "Norway", lowFlag: "🇳🇴" }
 ];
 
@@ -51,15 +52,16 @@ export default function App() {
       data.matches?.forEach((match) => {
         if (match.status === "FINISHED") {
           
-          // 1. Map API team names to match the custom App roster names exactly
+          // 1. Funnel API colloquial names into strict FIFA names
           const apiNameMap = {
             "Czech Republic": "Czechia",
-            "Korea Republic": "South Korea",
+            "South Korea": "Korea Republic",
             "United States": "USA",
-            "Côte d'Ivoire": "Ivory Coast",
+            "Ivory Coast": "Côte d'Ivoire",
             "Turkey": "Türkiye",
             "Cape Verde": "Cabo Verde",
-            "IR Iran": "Iran"
+            "Iran": "IR Iran",
+            "DR Congo": "Congo DR"
           };
 
           const rawHome = match.homeTeam.name;
