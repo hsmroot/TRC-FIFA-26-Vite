@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 
 // 24 Participants - Ranked Top-Tier paired inversely with Lowest-Tier (100% 2026 Qualified Teams)
-// Names strictly match official FIFA 2026 designations
 const INITIAL_ROSTER = [
   { id: 1, name: "Zhihao", topTeam: "France", topFlag: "🇫🇷", lowTeam: "Scotland", lowFlag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
   { id: 2, name: "Junrun", topTeam: "Argentina", topFlag: "🇦🇷", lowTeam: "Tunisia", lowFlag: "🇹🇳" },
@@ -19,7 +18,7 @@ const INITIAL_ROSTER = [
   { id: 14, name: "Hongyu", topTeam: "Morocco", topFlag: "🇲🇦", lowTeam: "South Africa", lowFlag: "🇿🇦" },
   { id: 15, name: "Hassan", topTeam: "Mexico", topFlag: "🇲🇽", lowTeam: "Iraq", lowFlag: "🇮🇶" },
   { id: 16, name: "Pari", topTeam: "Sweden", topFlag: "🇸🇪", lowTeam: "Curaçao", lowFlag: "🇨🇼" },
-  { id: 17, name: "Harshana", topTeam: "Senegal", topFlag: "🇸🇳", lowTeam: "Bosnia and Herzegovina", lowFlag: "🇧🇦" },
+  { id: 17, name: "Irina", topTeam: "Senegal", topFlag: "🇸🇳", lowTeam: "Bosnia and Herzegovina", lowFlag: "🇧🇦" },
   { id: 18, name: "Jawed", topTeam: "Japan", topFlag: "🇯🇵", lowTeam: "Czechia", lowFlag: "🇨🇿" },
   { id: 19, name: "Jade", topTeam: "Switzerland", topFlag: "🇨🇭", lowTeam: "Ghana", lowFlag: "🇬🇭" },
   { id: 20, name: "Qi", topTeam: "Korea Republic", topFlag: "🇰🇷", lowTeam: "Saudi Arabia", lowFlag: "🇸🇦" },
@@ -35,13 +34,25 @@ INITIAL_ROSTER.forEach((p) => {
   INITIAL_TEAM_STATS[p.lowTeam] = { wins: 0, draws: 0, goals: 0 };
 });
 
+const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+
 export default function App() {
   const [teamStats, setTeamStats] = useState(INITIAL_TEAM_STATS);
-  const [isSyncing, setIsSyncing] = useState(false);
+  const [upcomingMatches, setUpcomingMatches] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [nextUpdateIn, setNextUpdateIn] = useState(TWO_HOURS_MS);
+
+  // Quick lookup table to match a Country name -> Participant Name
+  const teamToPersonMap = useMemo(() => {
+    const map = {};
+    INITIAL_ROSTER.forEach((p) => {
+      map[p.topTeam] = p.name;
+      map[p.lowTeam] = p.name;
+    });
+    return map;
+  }, []);
 
   const fetchLiveData = async () => {
-    setIsSyncing(true);
     try {
       const response = await fetch("/api/football");
       if (!response.ok) throw new Error(`API returned status: ${response.status}`);
@@ -49,69 +60,92 @@ export default function App() {
       const data = await response.json();
       const freshStats = JSON.parse(JSON.stringify(INITIAL_TEAM_STATS));
 
+      const apiNameMap = {
+        "Czech Republic": "Czechia",
+        "South Korea": "Korea Republic",
+        "United States": "USA",
+        "Ivory Coast": "Côte d'Ivoire",
+        "Turkey": "Türkiye",
+        "Cape Verde": "Cabo Verde",
+        "Iran": "IR Iran",
+        "DR Congo": "Congo DR"
+      };
+
+      const normalize = (name) => apiNameMap[name] || name;
+
       data.matches?.forEach((match) => {
+        const homeTeam = normalize(match.homeTeam.name);
+        const awayTeam = normalize(match.awayTeam.name);
+
         if (match.status === "FINISHED") {
-          
-          // 1. Funnel API colloquial names into strict FIFA names
-          const apiNameMap = {
-            "Czech Republic": "Czechia",
-            "South Korea": "Korea Republic",
-            "United States": "USA",
-            "Ivory Coast": "Côte d'Ivoire",
-            "Turkey": "Türkiye",
-            "Cape Verde": "Cabo Verde",
-            "Iran": "IR Iran",
-            "DR Congo": "Congo DR"
-          };
-
-          const rawHome = match.homeTeam.name;
-          const rawAway = match.awayTeam.name;
-          
-          const homeTeam = apiNameMap[rawHome] || rawHome;
-          const awayTeam = apiNameMap[rawAway] || rawAway;
-
-          // 2. Grab the API's raw full-time score
           let homeOfficialScore = match.score.fullTime.home !== null ? match.score.fullTime.home : 0;
           let awayOfficialScore = match.score.fullTime.away !== null ? match.score.fullTime.away : 0;
 
-          // 3. OFFICIAL FIFA RULES: Subtract shootout goals to get the true 120-minute score
           if (match.score.penalties && match.score.penalties.home !== null) {
             homeOfficialScore -= match.score.penalties.home;
             awayOfficialScore -= match.score.penalties.away;
           }
 
           if (freshStats[homeTeam]) {
-            // 4. Award Wins/Draws based ONLY on the true 120-minute score
             if (homeOfficialScore > awayOfficialScore) freshStats[homeTeam].wins += 1;
             else if (homeOfficialScore === awayOfficialScore) freshStats[homeTeam].draws += 1;
-            
-            // 5. Add the real, in-game goals
             freshStats[homeTeam].goals += homeOfficialScore;
           }
           if (freshStats[awayTeam]) {
             if (awayOfficialScore > homeOfficialScore) freshStats[awayTeam].wins += 1;
             else if (homeOfficialScore === awayOfficialScore) freshStats[awayTeam].draws += 1;
-            
             freshStats[awayTeam].goals += awayOfficialScore;
           }
         }
       });
+
+      // Filter for upcoming fixtures
+      const futureFixtures = (data.matches || [])
+        .filter((m) => m.status === "TIMED" || m.status === "SCHEDULED")
+        .sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate))
+        .slice(0, 3)
+        .map((m) => {
+          const hTeam = normalize(m.homeTeam.name);
+          const aTeam = normalize(m.awayTeam.name);
+          return {
+            id: m.id,
+            date: new Date(m.utcDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', weekday: 'short' }),
+            home: { country: hTeam, person: teamToPersonMap[hTeam] || "External" },
+            away: { country: aTeam, person: teamToPersonMap[aTeam] || "External" }
+          };
+        });
+
       setTeamStats(freshStats);
-      
-      // Update the timestamp on successful fetch
-      const now = new Date();
-      setLastUpdated(now.toLocaleString());
+      setUpcomingMatches(futureFixtures);
+      setLastUpdated(new Date().toLocaleTimeString());
+      setNextUpdateIn(TWO_HOURS_MS); // Reset countdown clock
 
     } catch (error) {
       console.error("Sync Error:", error);
-    } finally {
-      setIsSyncing(false);
     }
   };
 
+  // 1. Initial Fetch + 2-Hour Auto-Sync Cycle
   useEffect(() => {
     fetchLiveData();
+    const syncInterval = setInterval(fetchLiveData, TWO_HOURS_MS);
+    return () => clearInterval(syncInterval);
   }, []);
+
+  // 2. Visual Countdown Ticker (Updates every second)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNextUpdateIn((prev) => (prev > 1000 ? prev - 1000 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatCountdown = (ms) => {
+    const totalSecs = Math.floor(ms / 1000);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = totalSecs % 60;
+    return `${mins}m ${secs < 10 ? "0" : ""}${secs}s`;
+  };
 
   const leaderboardData = useMemo(() => {
     return INITIAL_ROSTER.map((p) => {
@@ -122,6 +156,8 @@ export default function App() {
       const totalDraws = top.draws + low.draws;
       const totalGoals = top.goals + low.goals;
       
+      // Standard FIFA rule: 3 pts for Win, 1 pt for Draw. 
+      // (Add "+ totalGoals" at the end of the line below if you want custom 1 Goal = 1 Pt rules!)
       const totalPoints = (totalWins * 3) + (totalDraws * 1);
       const initials = p.name.substring(0, 2).toUpperCase();
 
@@ -139,15 +175,21 @@ export default function App() {
   const styles = {
     wrapper: { backgroundColor: "#0f172a", color: "#f8fafc", fontFamily: "system-ui, sans-serif", minHeight: "100vh", padding: "24px" },
     container: { maxWidth: "1100px", margin: "0 auto" },
-    header: { display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "2px solid #1e293b", paddingBottom: "20px", marginBottom: "20px", flexWrap: "wrap", gap: "20px" },
-    titleBox: { display: "flex", flexDirection: "column", gap: "8px" },
-    title: { fontSize: "2.5rem", fontWeight: "800", color: "#ffffff", margin: 0, letterSpacing: "-0.05em" },
-    subtitle: { color: "#fbbf24", fontSize: "1.25rem", fontWeight: "700", margin: 0, letterSpacing: "0.05em" },
-    timestamp: { color: "#94a3b8", fontSize: "0.9rem", margin: 0, fontStyle: "italic" },
-    apiBtn: (loading) => ({ padding: "10px 20px", backgroundColor: loading ? "#64748b" : "#10b981", color: "#fff", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: loading ? "not-allowed" : "pointer", transition: "background-color 0.2s" }),
-    infoCard: { backgroundColor: "#1e293b", padding: "16px 20px", borderRadius: "8px", marginBottom: "24px", borderLeft: "4px solid #3b82f6" },
-    infoTitle: { margin: "0 0 8px 0", color: "#60a5fa", fontSize: "1.1rem" },
-    infoList: { margin: 0, paddingLeft: "20px", color: "#cbd5e1", fontSize: "0.95rem", display: "flex", flexDirection: "column", gap: "6px" },
+    header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "2px solid #1e293b", paddingBottom: "24px", marginBottom: "24px", flexWrap: "wrap", gap: "20px" },
+    titleBox: { display: "flex", flexDirection: "column", gap: "6px", flex: "1 1 300px" },
+    title: { fontSize: "2.2rem", fontWeight: "800", color: "#ffffff", margin: 0, letterSpacing: "-0.04em" },
+    subtitle: { color: "#fbbf24", fontSize: "1.1rem", fontWeight: "700", margin: 0 },
+    timestampBox: { marginTop: "8px", fontSize: "0.85rem", color: "#94a3b8" },
+    
+    // Upcoming Matches Widget Styling
+    fixturesWidget: { flex: "1 1 450px", backgroundColor: "#1e293b", borderRadius: "10px", padding: "16px", border: "1px solid #334155" },
+    widgetHeader: { fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", color: "#38bdf8", fontWeight: "700", marginBottom: "12px", borderBottom: "1px solid #334155", paddingBottom: "6px" },
+    matchRow: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", fontSize: "0.9rem", borderBottom: "1px solid rgba(255,255,255,0.05)" },
+    teamSide: { display: "flex", flexDirection: "column", width: "42%" },
+    personTag: { fontSize: "0.75rem", color: "#fbbf24", fontWeight: "600" },
+    vsBadge: { fontSize: "0.75rem", fontWeight: "800", backgroundColor: "#0f172a", color: "#64748b", padding: "2px 6px", borderRadius: "4px" },
+    matchTime: { fontSize: "0.7rem", color: "#64748b", width: "100%", textAlign: "center", marginTop: "2px" },
+
     table: { width: "100%", borderCollapse: "collapse", textAlign: "left", backgroundColor: "#1e293b", borderRadius: "12px", overflow: "hidden" },
     th: { backgroundColor: "#0f172a", color: "#94a3b8", padding: "16px", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid #334155" },
     td: { padding: "16px", borderBottom: "1px solid #334155", fontSize: "0.95rem" },
@@ -162,25 +204,48 @@ export default function App() {
     <div style={styles.wrapper}>
       <div style={styles.container}>
         <header style={styles.header}>
+          
+          {/* Left Side: Title & Sync Timestamps */}
           <div style={styles.titleBox}>
-            <h1 style={styles.title}>2026 TRC FIFA World Cup Sweepstakes!</h1>
-            <h2 style={styles.subtitle}>Winner Winner Chicken Dinner (Top) & Wooden Spoon (Low)</h2>
-            <p style={styles.timestamp}>Last Updated: {lastUpdated || "Waiting for kickoff..."}</p>
+            <h1 style={styles.title}>2026 TRC World Cup Sweepstakes</h1>
+            <h2 style={styles.subtitle}>Winner Winner Chicken Dinner</h2>
+            <div style={styles.timestampBox}>
+              <div>⚡ Last API Sync: <strong style={{color: "#e2e8f0"}}>{lastUpdated || "Fetching..."}</strong></div>
+              <div>⏳ Next Auto-Update in: <span style={{color: "#38bdf8"}}>{formatCountdown(nextUpdateIn)}</span></div>
+            </div>
           </div>
-          <button onClick={fetchLiveData} disabled={isSyncing} style={styles.apiBtn(isSyncing)}>
-            {isSyncing ? "Syncing..." : "Refresh Live Data"}
-          </button>
-        </header>
 
-        {/* How It Works Section */}
-        <div style={styles.infoCard}>
-          <h3 style={styles.infoTitle}>How Points are Calculated (Official FIFA Rules)</h3>
-          <ul style={styles.infoList}>
-            <li><strong>Wins & Draws:</strong> 3 points for a win, 1 point for a draw based strictly on the score after 120 minutes.</li>
-            <li><strong>Penalty Shootouts:</strong> Ignored for standings. A match decided by penalties is officially recorded as a Draw.</li>
-            <li><strong>Tiebreakers:</strong> If total points are equal, the participant with the most in-game goals scored takes the higher rank.</li>
-          </ul>
-        </div>
+          {/* Right Side: Next 3 Matches Banner */}
+          <div style={styles.fixturesWidget}>
+            <div style={styles.widgetHeader}>📅 Next 3 Upcoming Matches</div>
+            {upcomingMatches.length === 0 ? (
+              <div style={{fontSize: "0.85rem", color: "#64748b", padding: "10px 0"}}>No upcoming scheduled fixtures found.</div>
+            ) : (
+              upcomingMatches.map((m) => (
+                <div key={m.id} style={styles.matchRow}>
+                  {/* Home Team */}
+                  <div style={{...styles.teamSide, alignItems: "flex-start"}}>
+                    <strong>{m.home.country}</strong>
+                    <span style={styles.personTag}>👤 {m.home.person}</span>
+                  </div>
+
+                  {/* VS Divider */}
+                  <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+                    <span style={styles.vsBadge}>VS</span>
+                    <span style={styles.matchTime}>{m.date}</span>
+                  </div>
+
+                  {/* Away Team */}
+                  <div style={{...styles.teamSide, alignItems: "flex-end"}}>
+                    <strong>{m.away.country}</strong>
+                    <span style={styles.personTag}>{m.away.person} 👤</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+        </header>
 
         <div style={{ overflowX: "auto", borderRadius: "12px", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.4)" }}>
           <table style={styles.table}>
