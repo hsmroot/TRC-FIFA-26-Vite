@@ -186,29 +186,32 @@ export default function App() {
 
   const currentLeaderName = leaderboardData.length > 0 ? leaderboardData[0].name : "TBD";
 
+  // Margins and paddings significantly tightened across the board
   const styles = {
-    wrapper: { backgroundColor: "#0f172a", color: "#f8fafc", fontFamily: "system-ui, sans-serif", minHeight: "100vh", padding: "24px" },
+    wrapper: { backgroundColor: "#0f172a", color: "#f8fafc", fontFamily: "system-ui, sans-serif", minHeight: "100vh", padding: "16px" },
     container: { maxWidth: "1100px", margin: "0 auto" },
-    header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "2px solid #1e293b", paddingBottom: "24px", marginBottom: "24px", flexWrap: "wrap", gap: "20px" },
-    titleBox: { display: "flex", flexDirection: "column", gap: "6px", flex: "1 1 300px" },
+    header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "2px solid #1e293b", paddingBottom: "12px", marginBottom: "16px", flexWrap: "wrap", gap: "16px" },
+    titleBox: { display: "flex", flexDirection: "column", gap: "4px", flex: "1 1 300px" },
     title: { fontSize: "2.2rem", fontWeight: "800", color: "#ffffff", margin: 0, letterSpacing: "-0.04em" },
-    subtitle: { color: "#fbbf24", fontSize: "1.1rem", fontWeight: "700", margin: 0 },
-    timestampBox: { marginTop: "8px", fontSize: "0.85rem", color: "#94a3b8" },
     
-    fixturesWidget: { flex: "1 1 450px", backgroundColor: "#1e293b", borderRadius: "10px", padding: "16px", border: "1px solid #334155" },
-    widgetHeader: { fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", color: "#38bdf8", fontWeight: "700", marginBottom: "12px", borderBottom: "1px solid #334155", paddingBottom: "6px" },
-    recentHeader: { fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", color: "#34d399", fontWeight: "700", marginBottom: "12px", borderBottom: "1px solid #334155", paddingBottom: "6px" },
-    matchRow: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", fontSize: "0.9rem", borderBottom: "1px solid rgba(255,255,255,0.05)" },
+    // Neon Pink Subtitle with glow effect
+    subtitle: { color: "#ff10f0", fontSize: "1.1rem", fontWeight: "700", margin: 0, textShadow: "0 0 8px rgba(255, 16, 240, 0.5)" },
+    
+    timestampBox: { marginTop: "4px", fontSize: "0.85rem", color: "#94a3b8" },
+    
+    fixturesWidget: { flex: "1 1 450px", backgroundColor: "#1e293b", borderRadius: "8px", padding: "12px 16px", border: "1px solid #334155" },
+    widgetHeader: { fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", color: "#38bdf8", fontWeight: "700", marginBottom: "8px", borderBottom: "1px solid #334155", paddingBottom: "4px" },
+    recentHeader: { fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", color: "#34d399", fontWeight: "700", marginBottom: "8px", borderBottom: "1px solid #334155", paddingBottom: "4px" },
+    matchRow: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", fontSize: "0.9rem", borderBottom: "1px solid rgba(255,255,255,0.05)" },
     teamSide: { display: "flex", flexDirection: "column", width: "42%" },
     personTag: { fontSize: "0.75rem", color: "#fbbf24", fontWeight: "600" },
     vsBadge: { fontSize: "0.75rem", fontWeight: "800", backgroundColor: "#0f172a", color: "#64748b", padding: "2px 6px", borderRadius: "4px" },
-    scoreBadge: { fontSize: "0.9rem", fontWeight: "800", backgroundColor: "#0f172a", color: "#34d399", padding: "4px 10px", borderRadius: "6px", letterSpacing: "2px" },
+    scoreBadge: { fontSize: "0.9rem", fontWeight: "800", backgroundColor: "#0f172a", color: "#34d399", padding: "2px 8px", borderRadius: "6px", letterSpacing: "2px" },
     matchTime: { fontSize: "0.7rem", color: "#64748b", width: "100%", textAlign: "center", marginTop: "2px" },
 
-    // Removed marginBottom entirely from the table element
     table: { width: "100%", borderCollapse: "collapse", textAlign: "left", backgroundColor: "#1e293b", borderRadius: "12px", overflow: "hidden", margin: 0 },
-    th: { backgroundColor: "#0f172a", color: "#94a3b8", padding: "16px", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid #334155" },
-    td: { padding: "16px", borderBottom: "1px solid #334155", fontSize: "0.95rem" },
+    th: { backgroundColor: "#0f172a", color: "#94a3b8", padding: "12px 16px", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid #334155" },
+    td: { padding: "12px 16px", borderBottom: "1px solid #334155", fontSize: "0.95rem" },
     badge: (rank) => ({
       display: "inline-flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", borderRadius: "50%", fontWeight: "bold", fontSize: "0.85rem",
       backgroundColor: rank === 1 ? "#fef3c7" : rank === 2 ? "#e2e8f0" : rank === 3 ? "#ffedd5" : "#334155",
@@ -233,7 +236,7 @@ export default function App() {
           <div style={styles.fixturesWidget}>
             <div style={styles.widgetHeader}>📅 Next 3 Upcoming Matches</div>
             {upcomingMatches.length === 0 ? (
-              <div style={{fontSize: "0.85rem", color: "#64748b", padding: "10px 0"}}>No upcoming scheduled fixtures found.</div>
+              <div style={{fontSize: "0.85rem", color: "#64748b", padding: "6px 0"}}>No upcoming scheduled fixtures found.</div>
             ) : (
               upcomingMatches.map((m) => (
                 <div key={m.id} style={styles.matchRow}>
@@ -256,8 +259,8 @@ export default function App() {
 
         </header>
 
-        {/* Table wrapper margin tightened from 30px down to 16px */}
-        <div style={{ overflowX: "auto", borderRadius: "12px", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.4)", marginBottom: "16px" }}>
+        {/* Table wrapper margin tightened to 12px */}
+        <div style={{ overflowX: "auto", borderRadius: "12px", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.4)", marginBottom: "12px" }}>
           <table style={styles.table}>
             <thead>
               <tr>
@@ -308,11 +311,10 @@ export default function App() {
           </table>
         </div>
 
-        {/* Snaps directly underneath the tightened margin */}
         <div style={{...styles.fixturesWidget, flex: "1 1 100%"}}>
           <div style={styles.recentHeader}>⚽ 3 Most Recent Match Results</div>
           {recentMatches.length === 0 ? (
-            <div style={{fontSize: "0.85rem", color: "#64748b", padding: "10px 0"}}>No completed match results found yet.</div>
+            <div style={{fontSize: "0.85rem", color: "#64748b", padding: "6px 0"}}>No completed match results found yet.</div>
           ) : (
             recentMatches.map((m) => (
               <div key={m.id} style={styles.matchRow}>
