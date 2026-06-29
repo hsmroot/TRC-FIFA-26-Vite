@@ -43,7 +43,6 @@ export default function App() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [nextUpdateIn, setNextUpdateIn] = useState(TWO_HOURS_MS);
 
-  // Map Country Name -> Participant Name
   const teamToPersonMap = useMemo(() => {
     const map = {};
     INITIAL_ROSTER.forEach((p) => {
@@ -100,7 +99,6 @@ export default function App() {
         }
       });
 
-      // 1. Process 3 Upcoming Matches
       const futureFixtures = (data.matches || [])
         .filter((m) => m.status === "TIMED" || m.status === "SCHEDULED")
         .sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate))
@@ -116,10 +114,9 @@ export default function App() {
           };
         });
 
-      // 2. Process 3 Most Recent Completed Matches
       const pastFixtures = (data.matches || [])
         .filter((m) => m.status === "FINISHED")
-        .sort((a, b) => new Date(b.utcDate) - new Date(a.utcDate)) // Sort newest finished first
+        .sort((a, b) => new Date(b.utcDate) - new Date(a.utcDate))
         .slice(0, 3)
         .map((m) => {
           const hTeam = normalize(m.homeTeam.name);
@@ -187,7 +184,6 @@ export default function App() {
     }).sort((a, b) => b.points - a.points || b.goals - a.goals);
   }, [teamStats]);
 
-  // Dynamically grab the current #1 leader name
   const currentLeaderName = leaderboardData.length > 0 ? leaderboardData[0].name : "TBD";
 
   const styles = {
@@ -199,7 +195,6 @@ export default function App() {
     subtitle: { color: "#fbbf24", fontSize: "1.1rem", fontWeight: "700", margin: 0 },
     timestampBox: { marginTop: "8px", fontSize: "0.85rem", color: "#94a3b8" },
     
-    // Matches Widgets Styling
     fixturesWidget: { flex: "1 1 450px", backgroundColor: "#1e293b", borderRadius: "10px", padding: "16px", border: "1px solid #334155" },
     widgetHeader: { fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", color: "#38bdf8", fontWeight: "700", marginBottom: "12px", borderBottom: "1px solid #334155", paddingBottom: "6px" },
     recentHeader: { fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", color: "#34d399", fontWeight: "700", marginBottom: "12px", borderBottom: "1px solid #334155", paddingBottom: "6px" },
@@ -210,7 +205,8 @@ export default function App() {
     scoreBadge: { fontSize: "0.9rem", fontWeight: "800", backgroundColor: "#0f172a", color: "#34d399", padding: "4px 10px", borderRadius: "6px", letterSpacing: "2px" },
     matchTime: { fontSize: "0.7rem", color: "#64748b", width: "100%", textAlign: "center", marginTop: "2px" },
 
-    table: { width: "100%", borderCollapse: "collapse", textAlign: "left", backgroundColor: "#1e293b", borderRadius: "12px", overflow: "hidden", marginBottom: "24px" },
+    // Removed marginBottom entirely from the table element
+    table: { width: "100%", borderCollapse: "collapse", textAlign: "left", backgroundColor: "#1e293b", borderRadius: "12px", overflow: "hidden", margin: 0 },
     th: { backgroundColor: "#0f172a", color: "#94a3b8", padding: "16px", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid #334155" },
     td: { padding: "16px", borderBottom: "1px solid #334155", fontSize: "0.95rem" },
     badge: (rank) => ({
@@ -234,7 +230,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Upcoming Matches Banner */}
           <div style={styles.fixturesWidget}>
             <div style={styles.widgetHeader}>📅 Next 3 Upcoming Matches</div>
             {upcomingMatches.length === 0 ? (
@@ -261,8 +256,8 @@ export default function App() {
 
         </header>
 
-        {/* Main Leaderboard Table */}
-        <div style={{ overflowX: "auto", borderRadius: "12px", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.4)", marginBottom: "30px" }}>
+        {/* Table wrapper margin tightened from 30px down to 16px */}
+        <div style={{ overflowX: "auto", borderRadius: "12px", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.4)", marginBottom: "16px" }}>
           <table style={styles.table}>
             <thead>
               <tr>
@@ -313,7 +308,7 @@ export default function App() {
           </table>
         </div>
 
-        {/* Recent Results Widget at Bottom */}
+        {/* Snaps directly underneath the tightened margin */}
         <div style={{...styles.fixturesWidget, flex: "1 1 100%"}}>
           <div style={styles.recentHeader}>⚽ 3 Most Recent Match Results</div>
           {recentMatches.length === 0 ? (
@@ -321,18 +316,13 @@ export default function App() {
           ) : (
             recentMatches.map((m) => (
               <div key={m.id} style={styles.matchRow}>
-                {/* Home Side */}
                 <div style={{...styles.teamSide, alignItems: "flex-start"}}>
                   <strong style={{fontSize: "1rem"}}>{m.home.country}</strong>
                   <span style={styles.personTag}>👤 {m.home.person}</span>
                 </div>
-
-                {/* Score Tally */}
                 <div style={{display: "flex", alignItems: "center", gap: "8px"}}>
                   <span style={styles.scoreBadge}>{m.homeScore} : {m.awayScore}</span>
                 </div>
-
-                {/* Away Side */}
                 <div style={{...styles.teamSide, alignItems: "flex-end"}}>
                   <strong style={{fontSize: "1rem"}}>{m.away.country}</strong>
                   <span style={styles.personTag}>{m.away.person} 👤</span>
