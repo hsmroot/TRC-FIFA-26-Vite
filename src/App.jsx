@@ -43,6 +43,16 @@ export default function App() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [nextUpdateIn, setNextUpdateIn] = useState(TWO_HOURS_MS);
 
+  // Bracket state: dynamically tracks advancing teams into center stage
+  const [bracketState, setBracketState] = useState({
+    R32: [],
+    R16: [],
+    QF: [],
+    SF: [],
+    Finals: [],
+    Winner: null
+  });
+
   const teamToPersonMap = useMemo(() => {
     const map = {};
     INITIAL_ROSTER.forEach((p) => {
@@ -73,6 +83,9 @@ export default function App() {
 
       const normalize = (name) => apiNameMap[name] || name;
 
+      // Track knockout phase advancements
+      const knockouts = { R32: new Set(), R16: new Set(), QF: new Set(), SF: new Set(), Finals: new Set(), Winner: null };
+
       data.matches?.forEach((match) => {
         const homeTeam = normalize(match.homeTeam.name);
         const awayTeam = normalize(match.awayTeam.name);
@@ -96,6 +109,16 @@ export default function App() {
             else if (homeOfficialScore === awayOfficialScore) freshStats[awayTeam].draws += 1;
             freshStats[awayTeam].goals += awayOfficialScore;
           }
+
+          // Populate bracket progression from official tournament stages
+          const stage = match.stage;
+          const winner = (match.score.winner === "HOME_TEAM") ? homeTeam : (match.score.winner === "AWAY_TEAM") ? awayTeam : null;
+          
+          if (stage === "LAST_32") { knockouts.R32.add(homeTeam); knockouts.R32.add(awayTeam); if(winner) knockouts.R16.add(winner); }
+          if (stage === "LAST_16") { knockouts.R16.add(homeTeam); knockouts.R16.add(awayTeam); if(winner) knockouts.QF.add(winner); }
+          if (stage === "QUARTER_FINALS") { knockouts.QF.add(homeTeam); knockouts.QF.add(awayTeam); if(winner) knockouts.SF.add(winner); }
+          if (stage === "SEMI_FINALS") { knockouts.SF.add(homeTeam); knockouts.SF.add(awayTeam); if(winner) knockouts.Finals.add(winner); }
+          if (stage === "FINAL") { knockouts.Finals.add(homeTeam); knockouts.Finals.add(awayTeam); if(winner) knockouts.Winner = winner; }
         }
       });
 
@@ -133,6 +156,17 @@ export default function App() {
       setTeamStats(freshStats);
       setUpcomingMatches(futureFixtures);
       setRecentMatches(pastFixtures);
+      
+      // Update knockout state arrays
+      setBracketState({
+        R32: Array.from(knockouts.R32),
+        R16: Array.from(knockouts.R16),
+        QF: Array.from(knockouts.QF),
+        SF: Array.from(knockouts.SF),
+        Finals: Array.from(knockouts.Finals),
+        Winner: knockouts.Winner
+      });
+
       setLastUpdated(new Date().toLocaleTimeString());
       setNextUpdateIn(TWO_HOURS_MS);
 
@@ -146,195 +180,3 @@ export default function App() {
     const syncInterval = setInterval(fetchLiveData, TWO_HOURS_MS);
     return () => clearInterval(syncInterval);
   }, []);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setNextUpdateIn((prev) => (prev > 1000 ? prev - 1000 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatCountdown = (ms) => {
-    const totalSecs = Math.floor(ms / 1000);
-    const mins = Math.floor((totalSecs % 3600) / 60);
-    const secs = totalSecs % 60;
-    return `${mins}m ${secs < 10 ? "0" : ""}${secs}s`;
-  };
-
-  const leaderboardData = useMemo(() => {
-    return INITIAL_ROSTER.map((p) => {
-      const top = teamStats[p.topTeam] || { wins: 0, draws: 0, goals: 0 };
-      const low = teamStats[p.lowTeam] || { wins: 0, draws: 0, goals: 0 };
-      
-      const totalWins = top.wins + low.wins;
-      const totalDraws = top.draws + low.draws;
-      const totalGoals = top.goals + low.goals;
-      
-      const totalPoints = (totalWins * 3) + (totalDraws * 1);
-      const initials = p.name.substring(0, 2).toUpperCase();
-
-      return {
-        ...p,
-        wins: totalWins,
-        draws: totalDraws,
-        goals: totalGoals,
-        points: totalPoints,
-        initials,
-      };
-    }).sort((a, b) => b.points - a.points || b.goals - a.goals);
-  }, [teamStats]);
-
-  const currentLeaderName = leaderboardData.length > 0 ? leaderboardData[0].name : "TBD";
-
-  // Margins and paddings significantly tightened across the board
-  const styles = {
-    wrapper: { backgroundColor: "#0f172a", color: "#f8fafc", fontFamily: "system-ui, sans-serif", minHeight: "100vh", padding: "16px" },
-    container: { maxWidth: "1100px", margin: "0 auto" },
-    header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "2px solid #1e293b", paddingBottom: "12px", marginBottom: "16px", flexWrap: "wrap", gap: "16px" },
-    titleBox: { display: "flex", flexDirection: "column", gap: "4px", flex: "1 1 300px" },
-    title: { fontSize: "2.2rem", fontWeight: "800", color: "#ffffff", margin: 0, letterSpacing: "-0.04em" },
-    
-    // Neon Pink Subtitle with glow effect
-    subtitle: { color: "#ff10f0", fontSize: "1.1rem", fontWeight: "700", margin: 0, textShadow: "0 0 8px rgba(255, 16, 240, 0.5)" },
-    
-    timestampBox: { marginTop: "4px", fontSize: "0.85rem", color: "#94a3b8" },
-    
-    fixturesWidget: { flex: "1 1 450px", backgroundColor: "#1e293b", borderRadius: "8px", padding: "12px 16px", border: "1px solid #334155" },
-    widgetHeader: { fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", color: "#38bdf8", fontWeight: "700", marginBottom: "8px", borderBottom: "1px solid #334155", paddingBottom: "4px" },
-    recentHeader: { fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", color: "#34d399", fontWeight: "700", marginBottom: "8px", borderBottom: "1px solid #334155", paddingBottom: "4px" },
-    matchRow: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", fontSize: "0.9rem", borderBottom: "1px solid rgba(255,255,255,0.05)" },
-    teamSide: { display: "flex", flexDirection: "column", width: "42%" },
-    personTag: { fontSize: "0.75rem", color: "#fbbf24", fontWeight: "600" },
-    vsBadge: { fontSize: "0.75rem", fontWeight: "800", backgroundColor: "#0f172a", color: "#64748b", padding: "2px 6px", borderRadius: "4px" },
-    scoreBadge: { fontSize: "0.9rem", fontWeight: "800", backgroundColor: "#0f172a", color: "#34d399", padding: "2px 8px", borderRadius: "6px", letterSpacing: "2px" },
-    matchTime: { fontSize: "0.7rem", color: "#64748b", width: "100%", textAlign: "center", marginTop: "2px" },
-
-    table: { width: "100%", borderCollapse: "collapse", textAlign: "left", backgroundColor: "#1e293b", borderRadius: "12px", overflow: "hidden", margin: 0 },
-    th: { backgroundColor: "#0f172a", color: "#94a3b8", padding: "12px 16px", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid #334155" },
-    td: { padding: "12px 16px", borderBottom: "1px solid #334155", fontSize: "0.95rem" },
-    badge: (rank) => ({
-      display: "inline-flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", borderRadius: "50%", fontWeight: "bold", fontSize: "0.85rem",
-      backgroundColor: rank === 1 ? "#fef3c7" : rank === 2 ? "#e2e8f0" : rank === 3 ? "#ffedd5" : "#334155",
-      color: rank === 1 ? "#d97706" : rank === 2 ? "#475569" : rank === 3 ? "#c2410c" : "#94a3b8"
-    }),
-  };
-
-  return (
-    <div style={styles.wrapper}>
-      <div style={styles.container}>
-        <header style={styles.header}>
-          
-          <div style={styles.titleBox}>
-            <h1 style={styles.title}>2026 TRC World Cup Sweepstakes</h1>
-            <h2 style={styles.subtitle}>Winner Winner KFC Chicken Dinner most likely going to be {currentLeaderName}</h2>
-            <div style={styles.timestampBox}>
-              <div>⚡ Last API Sync: <strong style={{color: "#e2e8f0"}}>{lastUpdated || "Fetching..."}</strong></div>
-              <div>⏳ Next Auto-Update in: <span style={{color: "#38bdf8"}}>{formatCountdown(nextUpdateIn)}</span></div>
-            </div>
-          </div>
-
-          <div style={styles.fixturesWidget}>
-            <div style={styles.widgetHeader}>📅 Next 3 Upcoming Matches</div>
-            {upcomingMatches.length === 0 ? (
-              <div style={{fontSize: "0.85rem", color: "#64748b", padding: "6px 0"}}>No upcoming scheduled fixtures found.</div>
-            ) : (
-              upcomingMatches.map((m) => (
-                <div key={m.id} style={styles.matchRow}>
-                  <div style={{...styles.teamSide, alignItems: "flex-start"}}>
-                    <strong>{m.home.country}</strong>
-                    <span style={styles.personTag}>👤 {m.home.person}</span>
-                  </div>
-                  <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
-                    <span style={styles.vsBadge}>VS</span>
-                    <span style={styles.matchTime}>{m.date}</span>
-                  </div>
-                  <div style={{...styles.teamSide, alignItems: "flex-end"}}>
-                    <strong>{m.away.country}</strong>
-                    <span style={styles.personTag}>{m.away.person} 👤</span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-        </header>
-
-        {/* Table wrapper margin tightened to 12px */}
-        <div style={{ overflowX: "auto", borderRadius: "12px", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.4)", marginBottom: "12px" }}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={{ ...styles.th, textAlign: "center", width: "70px" }}>Rank</th>
-                <th style={styles.th}>Participant</th>
-                <th style={styles.th}>Top-Tier Pick</th>
-                <th style={styles.th}>Lower-Tier Pick</th>
-                <th style={{ ...styles.th, textAlign: "center" }}>Wins</th>
-                <th style={{ ...styles.th, textAlign: "center" }}>Draws</th>
-                <th style={{ ...styles.th, textAlign: "center" }}>Goals</th>
-                <th style={{ ...styles.th, textAlign: "right", paddingRight: "30px", color: "#fbbf24" }}>Total Pts</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leaderboardData.map((player, index) => (
-                <tr
-                  key={player.id}
-                  style={{ borderBottom: "1px solid #334155", transition: "background-color 0.2s" }}
-                  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#0f172a")}
-                  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                >
-                  <td style={{ ...styles.td, textAlign: "center" }}>
-                    <span style={styles.badge(index + 1)}>{index + 1}</span>
-                  </td>
-                  <td style={{ ...styles.td, fontWeight: "600", color: "#fff" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <div style={{ width: "32px", height: "32px", borderRadius: "50%", backgroundColor: "#475569", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.8rem", fontWeight: "bold", color: "#e2e8f0" }}>
-                        {player.initials}
-                      </div>
-                      {player.name}
-                    </div>
-                  </td>
-                  <td style={styles.td}>
-                    <span style={{ marginRight: "8px", fontSize: "1.1rem" }}>{player.topFlag}</span> {player.topTeam}
-                  </td>
-                  <td style={styles.td}>
-                    <span style={{ marginRight: "8px", fontSize: "1.1rem" }}>{player.lowFlag}</span> {player.lowTeam}
-                  </td>
-                  <td style={{ ...styles.td, textAlign: "center", color: "#cbd5e1", fontWeight: "500" }}>{player.wins}</td>
-                  <td style={{ ...styles.td, textAlign: "center", color: "#94a3b8", fontWeight: "500" }}>{player.draws}</td>
-                  <td style={{ ...styles.td, textAlign: "center", color: "#22d3ee", fontWeight: "500" }}>{player.goals}</td>
-                  <td style={{ ...styles.td, textAlign: "right", paddingRight: "30px", fontWeight: "900", fontSize: "1.2rem", color: "#fbbf24" }}>
-                    {player.points}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div style={{...styles.fixturesWidget, flex: "1 1 100%"}}>
-          <div style={styles.recentHeader}>⚽ 3 Most Recent Match Results</div>
-          {recentMatches.length === 0 ? (
-            <div style={{fontSize: "0.85rem", color: "#64748b", padding: "6px 0"}}>No completed match results found yet.</div>
-          ) : (
-            recentMatches.map((m) => (
-              <div key={m.id} style={styles.matchRow}>
-                <div style={{...styles.teamSide, alignItems: "flex-start"}}>
-                  <strong style={{fontSize: "1rem"}}>{m.home.country}</strong>
-                  <span style={styles.personTag}>👤 {m.home.person}</span>
-                </div>
-                <div style={{display: "flex", alignItems: "center", gap: "8px"}}>
-                  <span style={styles.scoreBadge}>{m.homeScore} : {m.awayScore}</span>
-                </div>
-                <div style={{...styles.teamSide, alignItems: "flex-end"}}>
-                  <strong style={{fontSize: "1rem"}}>{m.away.country}</strong>
-                  <span style={styles.personTag}>{m.away.person} 👤</span>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-      </div>
-    </div>
-  );
-}
