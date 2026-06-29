@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 
-// 24 Participants - Ranked Top-Tier paired inversely with Lowest-Tier (100% 2026 Qualified Teams)
+// 24 Participants - Names strictly match official FIFA 2026 designations
 const INITIAL_ROSTER = [
   { id: 1, name: "Zhihao", topTeam: "France", topFlag: "🇫🇷", lowTeam: "Scotland", lowFlag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
   { id: 2, name: "Junrun", topTeam: "Argentina", topFlag: "🇦🇷", lowTeam: "Tunisia", lowFlag: "🇹🇳" },
@@ -39,10 +39,11 @@ const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 export default function App() {
   const [teamStats, setTeamStats] = useState(INITIAL_TEAM_STATS);
   const [upcomingMatches, setUpcomingMatches] = useState([]);
+  const [recentMatches, setRecentMatches] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [nextUpdateIn, setNextUpdateIn] = useState(TWO_HOURS_MS);
 
-  // Quick lookup table to match a Country name -> Participant Name
+  // Map Country Name -> Participant Name
   const teamToPersonMap = useMemo(() => {
     const map = {};
     INITIAL_ROSTER.forEach((p) => {
@@ -99,7 +100,7 @@ export default function App() {
         }
       });
 
-      // Filter for upcoming fixtures
+      // 1. Process 3 Upcoming Matches
       const futureFixtures = (data.matches || [])
         .filter((m) => m.status === "TIMED" || m.status === "SCHEDULED")
         .sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate))
@@ -115,24 +116,40 @@ export default function App() {
           };
         });
 
+      // 2. Process 3 Most Recent Completed Matches
+      const pastFixtures = (data.matches || [])
+        .filter((m) => m.status === "FINISHED")
+        .sort((a, b) => new Date(b.utcDate) - new Date(a.utcDate)) // Sort newest finished first
+        .slice(0, 3)
+        .map((m) => {
+          const hTeam = normalize(m.homeTeam.name);
+          const aTeam = normalize(m.awayTeam.name);
+          return {
+            id: m.id,
+            homeScore: m.score.fullTime.home !== null ? m.score.fullTime.home : 0,
+            awayScore: m.score.fullTime.away !== null ? m.score.fullTime.away : 0,
+            home: { country: hTeam, person: teamToPersonMap[hTeam] || "External" },
+            away: { country: aTeam, person: teamToPersonMap[aTeam] || "External" }
+          };
+        });
+
       setTeamStats(freshStats);
       setUpcomingMatches(futureFixtures);
+      setRecentMatches(pastFixtures);
       setLastUpdated(new Date().toLocaleTimeString());
-      setNextUpdateIn(TWO_HOURS_MS); // Reset countdown clock
+      setNextUpdateIn(TWO_HOURS_MS);
 
     } catch (error) {
       console.error("Sync Error:", error);
     }
   };
 
-  // 1. Initial Fetch + 2-Hour Auto-Sync Cycle
   useEffect(() => {
     fetchLiveData();
     const syncInterval = setInterval(fetchLiveData, TWO_HOURS_MS);
     return () => clearInterval(syncInterval);
   }, []);
 
-  // 2. Visual Countdown Ticker (Updates every second)
   useEffect(() => {
     const timer = setInterval(() => {
       setNextUpdateIn((prev) => (prev > 1000 ? prev - 1000 : 0));
@@ -156,8 +173,6 @@ export default function App() {
       const totalDraws = top.draws + low.draws;
       const totalGoals = top.goals + low.goals;
       
-      // Standard FIFA rule: 3 pts for Win, 1 pt for Draw. 
-      // (Add "+ totalGoals" at the end of the line below if you want custom 1 Goal = 1 Pt rules!)
       const totalPoints = (totalWins * 3) + (totalDraws * 1);
       const initials = p.name.substring(0, 2).toUpperCase();
 
@@ -172,6 +187,9 @@ export default function App() {
     }).sort((a, b) => b.points - a.points || b.goals - a.goals);
   }, [teamStats]);
 
+  // Dynamically grab the current #1 leader name
+  const currentLeaderName = leaderboardData.length > 0 ? leaderboardData[0].name : "TBD";
+
   const styles = {
     wrapper: { backgroundColor: "#0f172a", color: "#f8fafc", fontFamily: "system-ui, sans-serif", minHeight: "100vh", padding: "24px" },
     container: { maxWidth: "1100px", margin: "0 auto" },
@@ -181,16 +199,18 @@ export default function App() {
     subtitle: { color: "#fbbf24", fontSize: "1.1rem", fontWeight: "700", margin: 0 },
     timestampBox: { marginTop: "8px", fontSize: "0.85rem", color: "#94a3b8" },
     
-    // Upcoming Matches Widget Styling
+    // Matches Widgets Styling
     fixturesWidget: { flex: "1 1 450px", backgroundColor: "#1e293b", borderRadius: "10px", padding: "16px", border: "1px solid #334155" },
     widgetHeader: { fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", color: "#38bdf8", fontWeight: "700", marginBottom: "12px", borderBottom: "1px solid #334155", paddingBottom: "6px" },
+    recentHeader: { fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", color: "#34d399", fontWeight: "700", marginBottom: "12px", borderBottom: "1px solid #334155", paddingBottom: "6px" },
     matchRow: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", fontSize: "0.9rem", borderBottom: "1px solid rgba(255,255,255,0.05)" },
     teamSide: { display: "flex", flexDirection: "column", width: "42%" },
     personTag: { fontSize: "0.75rem", color: "#fbbf24", fontWeight: "600" },
     vsBadge: { fontSize: "0.75rem", fontWeight: "800", backgroundColor: "#0f172a", color: "#64748b", padding: "2px 6px", borderRadius: "4px" },
+    scoreBadge: { fontSize: "0.9rem", fontWeight: "800", backgroundColor: "#0f172a", color: "#34d399", padding: "4px 10px", borderRadius: "6px", letterSpacing: "2px" },
     matchTime: { fontSize: "0.7rem", color: "#64748b", width: "100%", textAlign: "center", marginTop: "2px" },
 
-    table: { width: "100%", borderCollapse: "collapse", textAlign: "left", backgroundColor: "#1e293b", borderRadius: "12px", overflow: "hidden" },
+    table: { width: "100%", borderCollapse: "collapse", textAlign: "left", backgroundColor: "#1e293b", borderRadius: "12px", overflow: "hidden", marginBottom: "24px" },
     th: { backgroundColor: "#0f172a", color: "#94a3b8", padding: "16px", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "1px solid #334155" },
     td: { padding: "16px", borderBottom: "1px solid #334155", fontSize: "0.95rem" },
     badge: (rank) => ({
@@ -205,17 +225,16 @@ export default function App() {
       <div style={styles.container}>
         <header style={styles.header}>
           
-          {/* Left Side: Title & Sync Timestamps */}
           <div style={styles.titleBox}>
             <h1 style={styles.title}>2026 TRC World Cup Sweepstakes</h1>
-            <h2 style={styles.subtitle}>Winner Winner Chicken Dinner</h2>
+            <h2 style={styles.subtitle}>Winner Winner KFC Chicken Dinner most likely going to be {currentLeaderName}</h2>
             <div style={styles.timestampBox}>
               <div>⚡ Last API Sync: <strong style={{color: "#e2e8f0"}}>{lastUpdated || "Fetching..."}</strong></div>
               <div>⏳ Next Auto-Update in: <span style={{color: "#38bdf8"}}>{formatCountdown(nextUpdateIn)}</span></div>
             </div>
           </div>
 
-          {/* Right Side: Next 3 Matches Banner */}
+          {/* Upcoming Matches Banner */}
           <div style={styles.fixturesWidget}>
             <div style={styles.widgetHeader}>📅 Next 3 Upcoming Matches</div>
             {upcomingMatches.length === 0 ? (
@@ -223,19 +242,14 @@ export default function App() {
             ) : (
               upcomingMatches.map((m) => (
                 <div key={m.id} style={styles.matchRow}>
-                  {/* Home Team */}
                   <div style={{...styles.teamSide, alignItems: "flex-start"}}>
                     <strong>{m.home.country}</strong>
                     <span style={styles.personTag}>👤 {m.home.person}</span>
                   </div>
-
-                  {/* VS Divider */}
                   <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
                     <span style={styles.vsBadge}>VS</span>
                     <span style={styles.matchTime}>{m.date}</span>
                   </div>
-
-                  {/* Away Team */}
                   <div style={{...styles.teamSide, alignItems: "flex-end"}}>
                     <strong>{m.away.country}</strong>
                     <span style={styles.personTag}>{m.away.person} 👤</span>
@@ -247,7 +261,8 @@ export default function App() {
 
         </header>
 
-        <div style={{ overflowX: "auto", borderRadius: "12px", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.4)" }}>
+        {/* Main Leaderboard Table */}
+        <div style={{ overflowX: "auto", borderRadius: "12px", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.4)", marginBottom: "30px" }}>
           <table style={styles.table}>
             <thead>
               <tr>
@@ -297,6 +312,36 @@ export default function App() {
             </tbody>
           </table>
         </div>
+
+        {/* Recent Results Widget at Bottom */}
+        <div style={{...styles.fixturesWidget, flex: "1 1 100%"}}>
+          <div style={styles.recentHeader}>⚽ 3 Most Recent Match Results</div>
+          {recentMatches.length === 0 ? (
+            <div style={{fontSize: "0.85rem", color: "#64748b", padding: "10px 0"}}>No completed match results found yet.</div>
+          ) : (
+            recentMatches.map((m) => (
+              <div key={m.id} style={styles.matchRow}>
+                {/* Home Side */}
+                <div style={{...styles.teamSide, alignItems: "flex-start"}}>
+                  <strong style={{fontSize: "1rem"}}>{m.home.country}</strong>
+                  <span style={styles.personTag}>👤 {m.home.person}</span>
+                </div>
+
+                {/* Score Tally */}
+                <div style={{display: "flex", alignItems: "center", gap: "8px"}}>
+                  <span style={styles.scoreBadge}>{m.homeScore} : {m.awayScore}</span>
+                </div>
+
+                {/* Away Side */}
+                <div style={{...styles.teamSide, alignItems: "flex-end"}}>
+                  <strong style={{fontSize: "1rem"}}>{m.away.country}</strong>
+                  <span style={styles.personTag}>{m.away.person} 👤</span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
       </div>
     </div>
   );
