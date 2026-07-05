@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from "react";
 // 24 Participants - Names strictly match official FIFA 2026 designations
 const INITIAL_ROSTER = [
   { id: 1, name: "Zhihao", topTeam: "France", topFlag: "🇫🇷", lowTeam: "Scotland", lowFlag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
-  { id: 2, name: "Junrun", topTeam: "Argentina", topFlag: "🇦🇷", lowTeam: "Tunisia", lowFlag: "🇹🇳" },
+  { id: 2, name: "Junran", topTeam: "Argentina", topFlag: "🇦🇷", lowTeam: "Tunisia", lowFlag: "🇹🇳" },
   { id: 3, name: "Tahmid", topTeam: "Brazil", topFlag: "🇧🇷", lowTeam: "Haiti", lowFlag: "🇭🇹" },
   { id: 4, name: "Hari", topTeam: "Uruguay", topFlag: "🇺🇾", lowTeam: "Congo DR", lowFlag: "🇨🇩" },
   { id: 5, name: "Theuns", topTeam: "Spain", topFlag: "🇪🇸", lowTeam: "Paraguay", lowFlag: "🇵🇾" },
@@ -67,8 +67,12 @@ export default function App() {
         "Ivory Coast": "Côte d'Ivoire",
         "Turkey": "Türkiye",
         "Cape Verde": "Cabo Verde",
+        "Cape Verde Islands": "Cabo Verde",
         "Iran": "IR Iran",
-        "DR Congo": "Congo DR"
+        "DR Congo": "Congo DR",
+        "Bosnia": "Bosnia and Herzegovina",
+        "Bosnia-Herzegovina": "Bosnia and Herzegovina",
+        "Bosnia & Herzegovina": "Bosnia and Herzegovina"
       };
 
       const normalize = (name) => apiNameMap[name] || name;
@@ -117,7 +121,7 @@ export default function App() {
       const pastFixtures = (data.matches || [])
         .filter((m) => m.status === "FINISHED")
         .sort((a, b) => new Date(b.utcDate) - new Date(a.utcDate))
-        .slice(0, 3)
+        .slice(0, 6)
         .map((m) => {
           const hTeam = normalize(m.homeTeam.name);
           const aTeam = normalize(m.awayTeam.name);
@@ -312,7 +316,7 @@ export default function App() {
         </div>
 
         <div style={{...styles.fixturesWidget, flex: "1 1 100%"}}>
-          <div style={styles.recentHeader}>⚽ 3 Most Recent Match Results</div>
+          <div style={styles.recentHeader}>⚽ 6 Most Recent Match Results</div>
           {recentMatches.length === 0 ? (
             <div style={{fontSize: "0.85rem", color: "#64748b", padding: "6px 0"}}>No completed match results found yet.</div>
           ) : (
