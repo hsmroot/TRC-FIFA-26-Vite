@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 
 // 24 Participants - Names strictly match official FIFA 2026 designations
 const INITIAL_ROSTER = [
-  { id: 1, name: "Zhihao", topTeam: "France", topFlag: "🇫🇷", lowTeam: "Scotland", lowFlag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
+  { id: 1, name: "Zhihao", topTeam: "Franc", topFlag: "🇫🇷", lowTeam: "Scotland", lowFlag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
   { id: 2, name: "Junran", topTeam: "Argentina", topFlag: "🇦🇷", lowTeam: "Tunisia", lowFlag: "🇹🇳" },
   { id: 3, name: "Tahmid", topTeam: "Brazil", topFlag: "🇧🇷", lowTeam: "Haiti", lowFlag: "🇭🇹" },
   { id: 4, name: "Hari", topTeam: "Uruguay", topFlag: "🇺🇾", lowTeam: "Congo DR", lowFlag: "🇨🇩" },
